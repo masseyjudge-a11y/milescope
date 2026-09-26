@@ -2960,16 +2960,18 @@ function initGlobe(){
       .labelAltitude(0.008)
       .labelResolution(3)
       .labelIncludeDot(false)
-      .arcColor("color")
-      .arcAltitudeAutoScale(0.34)
-      .arcStroke(function(d){ return d.aff ? 0.55 : 0.24; })
-      .arcDashLength(function(d){ return d.aff ? 0.4 : 1; })
-      .arcDashGap(function(d){ return d.aff ? 0.18 : 0; })
-      .arcDashAnimateTime(function(d){ return d.aff ? 2600 : 0; })
-      .arcsTransitionDuration(500)
-      .pointColor("color")
-      .pointAltitude(0.012)
-      .pointRadius("radius")
+      .arcColor(arcColorFn)
+      .arcAltitude(function(d){ return Math.min(0.4, 0.045 + d.route.distanceMiles/11000*0.42); })
+      .arcStroke(arcStrokeFn)
+      .arcDashLength(function(d){ return d.kind==="comet" ? 0.07 : 1; })
+      .arcDashGap(function(d){ return d.kind==="comet" ? 1 : 0; })
+      .arcDashInitialGap(function(d){ return d.kind==="comet" ? d.seed : 0; })
+      .arcDashAnimateTime(function(d){ return d.kind==="comet" ? 1600 + d.route.distanceMiles/3.2 : 0; })
+      .arcCurveResolution(96)
+      .arcsTransitionDuration(0)
+      .pointColor(pointColorFn)
+      .pointAltitude(0.006)
+      .pointRadius(function(d){ return d.aff ? 0.34 : 0.2; })
       .pointsMerge(false)
       .ringsData([])
       .ringColor(function(){ return function(t){ return "rgba(125,211,252,"+Math.max(0,1-t)+")"; }; })
@@ -3009,6 +3011,32 @@ function focusGlobeOn(route){
   scheduleResumeRotate();
 }
 
+/* ---- route line styling ----
+   focus: while a route is hovered or open, it stays bright and the rest
+   recede, so one line can be read against twenty. */
+var globeFocus = null;
+function focusMul(d){ return !globeFocus || d.route===globeFocus ? 1 : 0.22; }
+function arcColorFn(d){
+  var f = focusMul(d);
+  if(d.kind==="comet") return [hexToRgba(d.hex,0), hexToRgba(d.hex,0.9*f), "rgba(255,255,255,"+(0.95*f)+")"];
+  if(!d.aff) return ["rgba(148,163,184,"+(0.03*f)+")", "rgba(148,163,184,"+(0.26*f)+")"];
+  return [hexToRgba(d.hex,0.1*f), hexToRgba(d.hex,0.55*f), hexToRgba(d.hex,0.95*f)];
+}
+function arcStrokeFn(d){
+  var hot = globeFocus && d.route===globeFocus;
+  if(d.kind==="comet") return hot ? 0.75 : 0.55;
+  if(!d.aff) return hot ? 0.3 : 0.14;
+  return hot ? 0.55 : 0.32;
+}
+function pointColorFn(d){
+  var f = focusMul(d);
+  return d.aff ? hexToRgba(d.hex, 0.95*f) : "rgba(148,163,184,"+(0.45*f)+")";
+}
+function setGlobeFocus(route){
+  if(globeFocus===route || !World) { globeFocus = route; return; }
+  globeFocus = route;
+  World.arcColor(arcColorFn).arcStroke(arcStrokeFn).pointColor(pointColorFn);
+}
 function buildGlobeData(routes){
   var origin = AP[state.home];
   var arcs = [], points = [];
@@ -3016,17 +3044,12 @@ function buildGlobeData(routes){
     var aff = isRouteAffordable(r,state.wallet,state.enabled,state.cabin);
     var cur = routeCurrency(r,state.cabin);
     var baseColor = (PMAP[cur] && PMAP[cur].color) || "#94A3B8";
-    arcs.push({
-      startLat:origin.lat, startLng:origin.lng, endLat:r.dest.lat, endLng:r.dest.lng,
-      color: aff ? hexToRgba(baseColor,0.88) : hexToRgba(baseColor,0.15),
-      aff:aff, route:r
-    });
-    points.push({
-      lat:r.dest.lat, lng:r.dest.lng,
-      color: aff ? baseColor : "rgba(148,163,184,0.5)",
-      radius: aff ? 0.5 : 0.3,
-      aff:aff, route:r
-    });
+    var seg = {startLat:origin.lat, startLng:origin.lng, endLat:r.dest.lat, endLng:r.dest.lng, aff:aff, route:r, hex:baseColor};
+    /* every route: one thin gradient line, faint at home, bright at the destination */
+    arcs.push(Object.assign({kind:"base"}, seg));
+    /* bookable routes also carry a short light that travels outward */
+    if(aff) arcs.push(Object.assign({kind:"comet", seed:(r.destIata.charCodeAt(0)*7 + r.destIata.charCodeAt(2)) % 100 / 100}, seg));
+    points.push({lat:r.dest.lat, lng:r.dest.lng, aff:aff, route:r, hex:baseColor});
   });
   return {arcs:arcs, points:points};
 }
@@ -3068,6 +3091,7 @@ var stripPinned = false, hoverCloseTimer = null;
    moment after both are left. A click pins it open (see selectRoute)
    until the user explicitly closes it or clicks elsewhere on the globe. */
 function hoverRoute(route){
+  if(!stripPinned) setGlobeFocus(route || null);
   if(stripPinned) return;
   clearTimeout(hoverCloseTimer);
   if(route){
@@ -3142,6 +3166,7 @@ function optionRowHtml(plan, i){
 function selectRoute(route, opts){
   if(!route) return;
   if(opts && opts.pinned) stripPinned = true;
+  setGlobeFocus(route);
   state.selectedRoute = route;
   pauseAutoRotate();
   var pr = planRoute(route, state.cabin), best = pr.best;
@@ -3180,6 +3205,7 @@ function selectRoute(route, opts){
 }
 function closeStrip(){
   stripPinned = false;
+  setGlobeFocus(null);
   clearTimeout(hoverCloseTimer);
   stripEl.classList.remove("show");
   scheduleResumeRotate();
