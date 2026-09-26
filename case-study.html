@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Milescope · Product case study</title>
+<meta name="description" content="How Milescope turns a wallet of credit card points into a bookable trip: the problem, the decisions, the metrics, and what's next.">
+<meta property="og:title" content="Milescope · Product case study">
+<meta property="og:description" content="From 'what can my points do?' to a ranked, bookable plan in under a minute.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23030711'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%2338BDF8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap">
+<script>document.documentElement.classList.add("js")</script>
+<style>
+  :root{
+    --bg:#02040A; --text-1:rgba(255,255,255,.94); --text-2:rgba(255,255,255,.66); --text-3:rgba(255,255,255,.46);
+    --line:rgba(255,255,255,.09); --accent:#38BDF8; --accent-2:#7DD3FC; --ok:#4ADE80; --warn:#FBBF24; --bad:#FCA5A5;
+    --glass:rgba(22,28,44,.45); --rim:rgba(255,255,255,.12);
+    --display:'Bricolage Grotesque','DM Sans',system-ui,sans-serif; --sans:'DM Sans',system-ui,-apple-system,sans-serif;
+    --spring:cubic-bezier(.34,1.36,.5,1); --out:cubic-bezier(.16,1,.3,1);
+    color-scheme:dark;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text-1);font:16px/1.65 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(60% 50% at 85% 0%,rgba(56,189,248,.14),transparent 70%),
+               radial-gradient(50% 40% at 0% 30%,rgba(192,132,252,.10),transparent 70%),
+               radial-gradient(40% 40% at 60% 100%,rgba(255,122,26,.08),transparent 70%)}
+  a{color:var(--accent-2)}
+  .num{font-variant-numeric:tabular-nums}
+  :focus-visible{outline:2px solid var(--accent-2);outline-offset:3px;border-radius:6px}
+
+  /* nav */
+  .nav{position:sticky;top:12px;z-index:10;margin:12px auto 0;width:min(1080px,calc(100% - 24px));display:flex;align-items:center;gap:14px;
+    padding:10px 12px 10px 16px;border-radius:18px;background:var(--glass);border:1px solid var(--rim);
+    -webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);box-shadow:0 20px 50px -20px rgba(0,0,0,.6)}
+  .brand{display:flex;align-items:center;gap:9px;font-family:var(--display);font-weight:700;color:#fff;text-decoration:none;letter-spacing:-.01em}
+  .brand i{width:20px;height:20px;border-radius:7px;background:radial-gradient(circle at 30% 30%,#7DD3FC,#38BDF8 60%,#0B4A63);box-shadow:0 0 16px rgba(56,189,248,.5)}
+  .toc{display:flex;gap:2px;margin-left:10px;overflow-x:auto;scrollbar-width:none}
+  .toc::-webkit-scrollbar{display:none}
+  .toc a{font-size:13px;color:var(--text-2);text-decoration:none;padding:7px 10px;border-radius:10px;white-space:nowrap;transition:background .2s,color .2s}
+  .toc a:hover,.toc a.on{color:#fff;background:rgba(255,255,255,.08)}
+  .cta{margin-left:auto;flex:none;font-size:13px;font-weight:600;color:#06101C;text-decoration:none;padding:9px 15px;border-radius:12px;
+    background:linear-gradient(180deg,#fff,#DCE6F2);box-shadow:0 1px 0 #fff inset,0 8px 20px -8px rgba(125,211,252,.6);transition:transform .4s var(--spring)}
+  .cta:hover{transform:translateY(-1px)}
+  @media (max-width:760px){ .toc{display:none} }
+
+  main{width:min(1080px,calc(100% - 32px));margin:0 auto;padding:0 0 120px}
+  section{padding-top:96px;scroll-margin-top:80px}
+  .eyebrow{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-2)}
+  h1,h2,h3{font-family:var(--display);letter-spacing:-.025em;margin:0;text-wrap:balance}
+  h1{font-size:clamp(40px,7vw,76px);line-height:.98;font-weight:800;margin-top:18px;max-width:14ch}
+  h2{font-size:clamp(28px,4vw,42px);line-height:1.05;margin-top:10px;max-width:22ch}
+  h3{font-size:19px;letter-spacing:-.01em}
+  p{margin:14px 0 0;color:var(--text-2);max-width:66ch}
+  .lede{font-size:clamp(17px,2vw,20px);color:var(--text-2);max-width:56ch;margin-top:22px}
+
+  /* hero */
+  .hero{padding-top:72px}
+  .meta{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;margin-top:44px;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--line)}
+  .meta div{background:rgba(8,12,22,.85);padding:16px 18px}
+  .meta dt{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+  .meta dd{margin:6px 0 0;font-size:14.5px;color:var(--text-1)}
+  @media (max-width:760px){ .meta{grid-template-columns:1fr 1fr} }
+  .tldr{margin-top:28px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .stat{padding:20px;border-radius:18px;background:var(--glass);border:1px solid var(--rim);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+  .stat b{display:block;font-family:var(--display);font-size:36px;line-height:1;letter-spacing:-.03em;color:#fff}
+  .stat span{display:block;margin-top:8px;font-size:13.5px;color:var(--text-2)}
+  @media (max-width:760px){ .tldr{grid-template-columns:1fr} }
+
+  /* cards + grids */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:30px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px}
+  @media (max-width:860px){ .grid2,.grid3{grid-template-columns:1fr} }
+  .card{padding:22px;border-radius:20px;background:var(--glass);border:1px solid var(--rim);position:relative;
+    -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 1px 0 rgba(255,255,255,.07) inset}
+  .card p{font-size:14.5px;margin-top:8px}
+  .card .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;margin-bottom:12px}
+  .tag.blue{color:#E0F2FE;background:rgba(56,189,248,.22)}
+  .tag.green{color:#DCFCE7;background:rgba(74,222,128,.2)}
+  .tag.amber{color:#FEF3C7;background:rgba(251,191,36,.18)}
+  .tag.red{color:#FEE2E2;background:rgba(248,113,113,.2)}
+  .quote{font-family:var(--display);font-size:clamp(22px,3vw,30px);line-height:1.2;letter-spacing:-.02em;color:#fff;margin-top:34px;
+    padding-left:20px;border-left:3px solid var(--accent);max-width:30ch}
+
+  /* audit table */
+  .table{margin-top:28px;border:1px solid var(--line);border-radius:18px;overflow:hidden}
+  .tr{display:grid;grid-template-columns:1.1fr 1.3fr 1.3fr;border-top:1px solid var(--line)}
+  .tr:first-child{border-top:0;background:rgba(255,255,255,.04)}
+  .tr > div{padding:14px 18px;font-size:14px;color:var(--text-2)}
+  .tr:first-child > div{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+  .tr b{color:var(--text-1);font-weight:600}
+  @media (max-width:760px){ .tr{grid-template-columns:1fr} .tr:first-child{display:none} .tr > div:first-child{padding-bottom:0} }
+
+  /* flow */
+  .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:30px;counter-reset:f}
+  .step{padding:16px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid var(--line);counter-increment:f}
+  .step::before{content:counter(f);display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;
+    background:rgba(56,189,248,.18);color:var(--accent-2);font-size:12px;font-weight:700;margin-bottom:10px}
+  .step b{display:block;font-size:14px;color:#fff}
+  .step span{display:block;font-size:12.5px;color:var(--text-3);margin-top:4px;line-height:1.5}
+  @media (max-width:860px){ .flow{grid-template-columns:1fr 1fr} }
+
+  /* decisions */
+  .decision{display:grid;grid-template-columns:220px 1fr;gap:24px;padding:24px 0;border-top:1px solid var(--line)}
+  .decision:first-of-type{border-top:0}
+  .decision h3{font-size:17px}
+  .decision .opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .opt{padding:14px;border-radius:14px;border:1px solid var(--line);font-size:13.5px;color:var(--text-2);background:rgba(255,255,255,.02)}
+  .opt b{display:block;color:var(--text-1);font-size:13px;margin-bottom:4px}
+  .opt.pick{border-color:rgba(74,222,128,.35);background:rgba(74,222,128,.06)}
+  .opt.pick b::after{content:" ✓ chosen";color:var(--ok);font-size:11px;font-weight:700}
+  .why{grid-column:2;font-size:14px;color:var(--text-2);margin:0}
+  .why b{color:var(--text-1)}
+  @media (max-width:860px){ .decision{grid-template-columns:1fr;gap:12px} .decision .opts{grid-template-columns:1fr} .why{grid-column:1} }
+
+  /* metrics */
+  .ns{margin-top:30px;padding:28px;border-radius:24px;border:1px solid rgba(74,222,128,.3);
+    background:radial-gradient(90% 120% at 0% 0%,rgba(74,222,128,.14),rgba(56,189,248,.05) 60%,rgba(255,255,255,.02))}
+  .ns .eyebrow{color:var(--ok)}
+  .ns h3{font-size:clamp(22px,3vw,30px);margin-top:10px;max-width:28ch}
+  .funnel{display:flex;flex-direction:column;gap:8px;margin-top:22px}
+  .fr{display:grid;grid-template-columns:200px 1fr 150px;gap:14px;align-items:center;font-size:13.5px}
+  .fr code{font-size:12px;color:var(--accent-2);background:rgba(56,189,248,.1);padding:2px 7px;border-radius:6px}
+  .bar{height:10px;border-radius:999px;background:rgba(255,255,255,.06);overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#38BDF8,#4ADE80);width:var(--w);transform-origin:left;
+    transform:scaleX(0);transition:transform 1.1s var(--out)}
+  .in .bar i{transform:scaleX(1)}
+  .fr small{color:var(--text-3);font-size:12px}
+  @media (max-width:760px){ .fr{grid-template-columns:1fr;gap:6px} }
+
+  /* roadmap */
+  .road{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:30px}
+  .col h3{font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);font-family:var(--sans);font-weight:700;margin-bottom:10px}
+  .col .card{margin-bottom:10px;padding:16px 18px}
+  .col .card b{display:block;font-size:14.5px;color:#fff}
+  .col .card p{font-size:13px;margin-top:4px}
+  @media (max-width:860px){ .road{grid-template-columns:1fr} }
+
+  /* architecture */
+  .arch{margin-top:30px;padding:22px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.02);overflow-x:auto}
+  .arch svg{display:block;min-width:720px;width:100%;height:auto}
+  .arch text{font-family:var(--sans);fill:var(--text-2);font-size:13px}
+  .arch .t{fill:#fff;font-weight:600;font-size:14px}
+  .arch rect{fill:rgba(255,255,255,.04);stroke:rgba(255,255,255,.16)}
+  .arch .hl{fill:rgba(56,189,248,.1);stroke:rgba(125,211,252,.5)}
+  .arch path{stroke:rgba(255,255,255,.35);fill:none;stroke-width:1.4}
+
+  .close{margin-top:110px;padding:44px;border-radius:28px;text-align:center;background:var(--glass);border:1px solid var(--rim);
+    -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+  .close h2{margin:0 auto;max-width:18ch}
+  .close p{margin:14px auto 0}
+  .close .cta{display:inline-block;margin-top:26px;font-size:15px;padding:13px 22px}
+  footer{text-align:center;font-size:12.5px;color:var(--text-3);margin-top:40px}
+
+  /* reveal on scroll */
+  .js .rv{opacity:0;transform:translateY(18px);transition:opacity .8s var(--out),transform .8s var(--out)}
+  .rv.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto} .rv{opacity:1;transform:none;transition:none} .bar i{transform:none;transition:none}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav" aria-label="Case study">
+  <a class="brand" href="/"><i aria-hidden="true"></i>Milescope</a>
+  <div class="toc">
+    <a href="#problem">Problem</a><a href="#audit">v1 audit</a><a href="#solution">Solution</a>
+    <a href="#decisions">Decisions</a><a href="#metrics">Metrics</a><a href="#next">What's next</a>
+  </div>
+  <a class="cta" href="/">Open the app</a>
+</nav>
+
+<main>
+  <header class="hero">
+    <div class="eyebrow">Product case study</div>
+    <h1>Points are only valuable if you can spend them.</h1>
+    <p class="lede">Milescope turns a wallet of credit card points into a ranked, bookable trip plan: where you can go,
+      which program to book through, and exactly which card to transfer from.</p>
+    <dl class="meta">
+      <div><dt>Role</dt><dd>Product, design &amp; build</dd></div>
+      <div><dt>Timeline</dt><dd>Sept 2026 (v1 → v2)</dd></div>
+      <div><dt>Stack</dt><dd>Static web app, Vercel functions</dd></div>
+      <div><dt>Built with</dt><dd>AI-assisted development</dd></div>
+    </dl>
+    <div class="tldr">
+      <div class="stat rv"><b class="num">25</b><span>booking programs priced for every route, not just one “best guess”</span></div>
+      <div class="stat rv"><b class="num">5</b><span>card currencies with real transfer ratios and live bonuses applied</span></div>
+      <div class="stat rv"><b>&lt;60s</b><span>target time from landing to a bookable plan, via a 3-step setup</span></div>
+    </div>
+  </header>
+
+  <section id="problem" class="rv">
+    <div class="eyebrow">01 · The problem</div>
+    <h2>Transferable points are flexible, and that flexibility is the problem.</h2>
+    <p>Chase, Amex, Capital One, Citi and Bilt points can each move into a dozen or more airline programs, at
+      different ratios, with bonuses that come and go every few weeks. The same flight can cost 52,500 miles
+      in one program and 88,000 in another. To answer “where can I go?” a traveler has to cross-reference transfer charts,
+      award charts, airline partnerships and live seat availability, usually across five browser tabs and a spreadsheet.</p>
+    <div class="grid2">
+      <div class="card"><span class="tag blue">Primary user</span><h3>The multi-card traveler</h3>
+        <p>Holds two or more transferable currencies, takes one to three award trips a year, and knows points are
+          “worth more than cash back” but not how to prove it for a specific trip.</p></div>
+      <div class="card"><span class="tag amber">Job to be done</span><h3>“Show me where my points can take me, and the cheapest way to pay.”</h3>
+        <p>Existing tools answer narrower questions: award search assumes you already know the program; issuer
+          portals only price their own currency; blogs describe sweet spots, not your wallet.</p></div>
+    </div>
+    <p class="quote">The gap isn’t information. It’s combining your wallet with the rules into one decision.</p>
+  </section>
+
+  <section id="audit" class="rv">
+    <div class="eyebrow">02 · Auditing my own v1</div>
+    <h2>v1 looked finished. Checked against the real rules, it wasn’t trustworthy.</h2>
+    <p>Before adding features I tested v1 as a skeptical user would: checked every airline and transfer partner against
+      the current published charts, and walked the onboarding end to end. In a trust-sensitive product, one wrong answer
+      costs you the user, so accuracy came before new features.</p>
+    <div class="table" role="table">
+      <div class="tr" role="row"><div>Finding</div><div>User impact</div><div>Fix in v2</div></div>
+      <div class="tr" role="row"><div><b>Airlines assigned by a hash of airport codes</b></div><div>“JetBlue to Anchorage.” Flights that don’t exist erode trust instantly.</div><div>Hand-verified nonstop carrier tables for each hub airport.</div></div>
+      <div class="tr" role="row"><div><b>Wrong transfer partners</b></div><div>Capital One → Virgin Atlantic and Chase → LifeMiles listed; neither exists. A user could plan a trip around an impossible transfer.</div><div>Rebuilt from the Sept 2026 partner chart, including non-1:1 ratios (Amex → Emirates 5:4).</div></div>
+      <div class="tr" role="row"><div><b>Setup never asked for balances</b></div><div>Picking cards silently kept fake demo balances, so 17 of 18 routes showed as “affordable.”</div><div>Balance step with one-tap presets; blanks mean 0, never demo data.</div></div>
+      <div class="tr" role="row"><div><b>One answer per route</b></div><div>No way to see alternatives, or combine two cards into one airline account.</div><div>Every bookable program ranked for your wallet, with pooling across currencies.</div></div>
+      <div class="tr" role="row"><div><b>Live data surfaced as an error</b></div><div>“No API key configured” shown to every visitor.</div><div>Honest labels (“chart estimate” vs “live seats”) and a server-side seat check.</div></div>
+    </div>
+  </section>
+
+  <section id="solution" class="rv">
+    <div class="eyebrow">03 · The solution</div>
+    <h2>From “what can my points do?” to a transfer plan in five steps.</h2>
+    <div class="flow">
+      <div class="step"><b>Home airport</b><span>One tap on a common hub, or search</span></div>
+      <div class="step"><b>Cards</b><span>Pick the cards you hold; each switches on its currency</span></div>
+      <div class="step"><b>Balances</b><span>Ballpark with presets; stays in the browser</span></div>
+      <div class="step"><b>Best pick</b><span>The highest-value trip you can book right now</span></div>
+      <div class="step"><b>Plan</b><span>Exact transfers, alternatives, and a live seat check</span></div>
+    </div>
+    <div class="grid3">
+      <div class="card"><span class="tag green">Decide</span><h3>Best way to pay</h3><p>Every program that can book a route, ranked by how many of <em>your</em> points it costs, after ratios and bonuses. Pools two cards when neither covers it alone.</p></div>
+      <div class="card"><span class="tag green">Compare</span><h3>Value in ¢ per point</h3><p>Miles cost vs. an estimated cash fare: the metric points travelers already use to judge a redemption, surfaced on every route.</p></div>
+      <div class="card"><span class="tag green">Plan</span><h3>Trip board</h3><p>Save trips across the year and see whether one wallet covers all of them, currency by currency.</p></div>
+    </div>
+  </section>
+
+  <section id="decisions" class="rv">
+    <div class="eyebrow">04 · Key decisions &amp; tradeoffs</div>
+    <h2>What I chose, what I gave up, and why.</h2>
+    <div style="margin-top:20px">
+      <div class="decision">
+        <h3>Pricing data</h3>
+        <div class="opts"><div class="opt"><b>Live award search for every route</b>Accurate, but slow, rate-limited and costly per visitor.</div>
+          <div class="opt pick"><b>Chart estimates + live check on demand</b>Instant browsing; real seats fetched only when a user signals intent.</div></div>
+        <p class="why"><b>Why:</b> browsing needs speed, booking needs truth. Spending live queries only at the moment of intent keeps one API key inside its daily limit, and the UI labels every estimate as one.</p>
+      </div>
+      <div class="decision">
+        <h3>Accounts</h3>
+        <div class="opts"><div class="opt"><b>Sign-up to save a wallet</b>Enables sync; adds friction before any value.</div>
+          <div class="opt pick"><b>No account; data stays in the browser</b>Value in under a minute; nothing sensitive leaves the device.</div></div>
+        <p class="why"><b>Why:</b> balances are personal financial data, and time-to-value decides whether a first-time visitor stays. Accounts return only once saved trips prove people come back.</p>
+      </div>
+      <div class="decision">
+        <h3>API keys</h3>
+        <div class="opts"><div class="opt"><b>Browser calls the data provider</b>Simple, but exposes keys and is blocked by CORS.</div>
+          <div class="opt pick"><b>Server-side proxy with edge caching</b>Key never ships to the client; repeat searches are free.</div></div>
+        <p class="why"><b>Why:</b> security and cost. A two-hour edge cache means ten people checking Seattle → Tokyo cost one upstream call.</p>
+      </div>
+      <div class="decision">
+        <h3>Ranking</h3>
+        <div class="opts"><div class="opt"><b>Cheapest miles first</b>Easy to explain, but ignores whether the user can actually pay.</div>
+          <div class="opt pick"><b>Bookable first, then fewest of <em>your</em> points</b>The top answer is always one you can act on today.</div></div>
+        <p class="why"><b>Why:</b> an unaffordable “best” option is noise. The ranking answers the user’s real question, not the chart’s.</p>
+      </div>
+      <div class="decision">
+        <h3>Scope cut</h3>
+        <div class="opts"><div class="opt"><b>Hotels, multi-city, cash prices</b>Broader, but each doubles the data problem.</div>
+          <div class="opt pick"><b>One-way &amp; round-trip flights from five hubs, done right</b>Narrow and correct beats wide and wrong.</div></div>
+        <p class="why"><b>Why:</b> v1 showed breadth without accuracy destroys trust. Depth first, then expand.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="metrics" class="rv">
+    <div class="eyebrow">05 · How I’d measure success</div>
+    <h2>One metric that means a user got real value.</h2>
+    <div class="ns">
+      <div class="eyebrow">North star</div>
+      <h3>Weekly users who open a bookable plan: a route their own wallet can pay for.</h3>
+      <p>It captures activation (a real wallet), relevance (routes they can book) and intent (they opened the plan) in one number.
+        Every step below is instrumented as an analytics event in the app.</p>
+      <div class="funnel" aria-label="Instrumented funnel">
+        <div class="fr"><span><code>landing</code> Visit</span><div class="bar"><i style="--w:100%"></i></div><small>denominator</small></div>
+        <div class="fr"><span><code>onboarding_complete</code></span><div class="bar"><i style="--w:62%"></i></div><small>activation</small></div>
+        <div class="fr"><span><code>route_open</code> bookable</span><div class="bar"><i style="--w:44%"></i></div><small>north star</small></div>
+        <div class="fr"><span><code>live_check</code></span><div class="bar"><i style="--w:21%"></i></div><small>booking intent</small></div>
+        <div class="fr"><span><code>trip_saved</code></span><div class="bar"><i style="--w:12%"></i></div><small>retention signal</small></div>
+      </div>
+      <p style="font-size:12.5px;color:var(--text-3)">Bar lengths illustrate the funnel’s shape; they are targets to test, not measured results.</p>
+    </div>
+    <div class="grid3">
+      <div class="card"><span class="tag blue">Activation</span><h3>% of visitors reaching a real wallet</h3><p>Completed setup with a balance, or started the sample wallet. The balance step exists to move this.</p></div>
+      <div class="card"><span class="tag amber">Guardrail</span><h3>Accuracy reports</h3><p>Wrong partners or fares reported per 1,000 plans. Trust is the product; this must never trend up.</p></div>
+      <div class="card"><span class="tag red">Guardrail</span><h3>Live check reliability</h3><p>Error and rate-limit share on seat checks, and p75 time to first route. Speed is a feature.</p></div>
+    </div>
+  </section>
+
+  <section class="rv">
+    <div class="eyebrow">06 · Architecture</div>
+    <h2>Simple on purpose.</h2>
+    <p>A single static page does all pricing in the browser, so it’s instant and free to host. Serverless functions exist
+      only where a secret or a cache is needed.</p>
+    <div class="arch">
+      <svg viewBox="0 0 900 230" role="img" aria-label="Browser app calls three serverless functions; the availability function calls seats.aero with a server-side key and a two-hour edge cache.">
+        <rect class="hl" x="20" y="70" width="210" height="90" rx="14"/><text class="t" x="40" y="104">Browser app</text>
+        <text x="40" y="126">routes · pricing · ranking</text><text x="40" y="146">wallet in localStorage</text>
+        <rect x="330" y="20" width="230" height="56" rx="12"/><text class="t" x="350" y="45">/api/availability</text><text x="350" y="64">key + 2h edge cache</text>
+        <rect x="330" y="88" width="230" height="56" rx="12"/><text class="t" x="350" y="113">/api/deals</text><text x="350" y="132">points-blog RSS · optional</text>
+        <rect x="330" y="156" width="230" height="56" rx="12"/><text class="t" x="350" y="181">/api/live-status</text><text x="350" y="200">schedule check · optional</text>
+        <rect x="660" y="20" width="220" height="56" rx="12"/><text class="t" x="680" y="45">seats.aero</text><text x="680" y="64">cached award space</text>
+        <path d="M230 100 C 280 100, 280 48, 330 48"/><path d="M230 115 L 330 116"/><path d="M230 130 C 280 130, 280 184, 330 184"/>
+        <path d="M560 48 L 660 48"/>
+      </svg>
+    </div>
+  </section>
+
+  <section id="next" class="rv">
+    <div class="eyebrow">07 · What’s next</div>
+    <h2>Validate the assumptions, then widen the net.</h2>
+    <div class="road">
+      <div class="col"><h3>Now</h3>
+        <div class="card"><b>5 user interviews + onboarding test</b><p>Validate the core assumption: people know their balances roughly, but not which program to use.</p></div>
+        <div class="card"><b>Turn on analytics</b><p>Baseline the funnel above before changing anything else.</p></div></div>
+      <div class="col"><h3>Next</h3>
+        <div class="card"><b>Self-updating transfer bonuses</b><p>Extract new bonuses from blog feeds with a small classification model, with low-confidence items held for review.</p></div>
+        <div class="card"><b>Plain-English search</b><p>“Somewhere warm in March, business, two of us” → filters, ranking, and a plan.</p></div></div>
+      <div class="col"><h3>Later</h3>
+        <div class="card"><b>Seat alerts</b><p>Notify when saver space opens on a saved trip. The retention loop.</p></div>
+        <div class="card"><b>Live cash fares &amp; hotels</b><p>Replace estimated ¢/pt with real prices; extend to hotel transfer partners.</p></div></div>
+    </div>
+  </section>
+
+  <div class="close rv">
+    <h2>See your own wallet on the map.</h2>
+    <p>It takes under a minute, and nothing leaves your browser.</p>
+    <a class="cta" href="/">Open Milescope →</a>
+  </div>
+  <footer>Milescope · Award prices are estimates; always confirm before transferring points.</footer>
+</main>
+
+<script>
+(function(){
+  var els = document.querySelectorAll(".rv, .ns");
+  if(!("IntersectionObserver" in window)){ Array.prototype.forEach.call(els,function(e){ e.classList.add("in"); }); return; }
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); } });
+  }, {rootMargin:"0px 0px -10% 0px"});
+  Array.prototype.forEach.call(els,function(e){ io.observe(e); });
+  var links = document.querySelectorAll(".toc a"), secs = [].map.call(links,function(a){ return document.querySelector(a.getAttribute("href")); });
+  var so = new IntersectionObserver(function(entries){
+    entries.forEach(function(en){ if(en.isIntersecting){
+      var i = secs.indexOf(en.target); [].forEach.call(links,function(a,j){ a.classList.toggle("on", j===i); });
+    }});
+  }, {rootMargin:"-45% 0px -50% 0px"});
+  secs.forEach(function(s){ if(s) so.observe(s); });
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body>
+</html>

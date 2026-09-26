@@ -85,6 +85,8 @@
     white-space:nowrap;
   }
   .navtabs button:hover{color:var(--text-1);background:var(--fill-1)}
+  .navtabs .nav-cs{color:var(--text-2);font-size:12.5px;font-weight:500;padding:7px 10px;border-radius:10px;text-decoration:none;white-space:nowrap;display:flex;align-items:center}
+  .navtabs .nav-cs:hover{color:var(--text-1);background:rgba(255,255,255,.08)}
   .navtabs button .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);display:inline-block}
 
   .home-pill{
@@ -625,6 +627,14 @@
   .ob-hero p{margin-top:calc(22 * var(--u));font-size:calc(17 * var(--u));line-height:calc(29 * var(--u));
     color:var(--text-2);max-width:calc(40ch)}
   .ob-cta{display:flex;align-items:center;gap:calc(20 * var(--u));margin-top:calc(34 * var(--u));flex-wrap:wrap}
+  .ob-cs-link{font-size:calc(14 * var(--u));text-decoration:none;opacity:.9}
+  .ob-cs-link:hover{opacity:1}
+  .ob-proof{display:flex;gap:calc(34 * var(--u));margin:calc(40 * var(--u)) 0 0;flex-wrap:wrap}
+  .ob-proof div{display:flex;flex-direction:column;gap:calc(2 * var(--u))}
+  .ob-proof dt{font-family:var(--serif);font-size:calc(28 * var(--u));font-weight:700;color:#fff;letter-spacing:calc(-.8 * var(--u));line-height:1}
+  .ob-proof dd{margin:0;font-size:calc(12.5 * var(--u));color:var(--text-3)}
+  .anim .ob-proof{opacity:0}
+  .anim.play .ob-proof{--rise:calc(12 * var(--u));animation:ob-rise .7s var(--e-quint) 1.02s both}
   .ob-inline{font:inherit;color:var(--accent-2);cursor:pointer;text-decoration:underline;
     text-underline-offset:calc(3 * var(--u));text-decoration-color:rgba(125,211,252,.4)}
   .ob-inline:hover{color:#fff}
@@ -926,6 +936,11 @@
   :root{--side-w:292px;--list-w:384px;--top:76px}
   .shell3{position:fixed;inset:0;display:block;height:auto}
   .map-col{position:absolute;inset:0}
+  /* Center the planet in the open space between the two panes, not the
+     window: shift the canvas by half the difference in pane widths. */
+  @media (min-width:981px){
+    #globe-container{inset:0 auto 0 calc((var(--side-w) - var(--list-w)) / 2);width:100%}
+  }
   .wallet-col,.routes-col{
     position:absolute;top:var(--top);bottom:12px;border-radius:22px;z-index:20;
     transition:transform .5s var(--ease-out),opacity .4s ease;
@@ -1166,6 +1181,74 @@
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
     :root{--glass:rgba(14,19,32,.94);--glass-strong:rgba(12,16,28,.97)}
   }
+
+  /* ---- onboarding: balances step ---- */
+  .ob-bal-block[hidden]{display:none}
+  .ob-bal-block{animation:ob-settle .5s var(--e-quint) both}
+  .ob-bals{display:flex;flex-direction:column;gap:calc(12 * var(--u));max-width:calc(720 * var(--u))}
+  .ob-bal{padding:calc(14 * var(--u)) calc(16 * var(--u));border-radius:calc(16 * var(--u));
+    background:rgba(255,255,255,.04);border:calc(1 * var(--u)) solid var(--hair);
+    -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+  .ob-bal label{display:flex;align-items:center;gap:calc(9 * var(--u));font-size:calc(13.5 * var(--u));color:var(--text-2);margin-bottom:calc(10 * var(--u))}
+  .ob-bal label i{width:calc(8 * var(--u));height:calc(8 * var(--u));border-radius:50%;background:var(--glow);box-shadow:0 0 calc(10 * var(--u)) var(--glow)}
+  .ob-bal-row{display:flex;gap:calc(10 * var(--u));flex-wrap:wrap;align-items:center}
+  .ob-bal input{flex:1 1 calc(160 * var(--u));min-width:0;padding:calc(12 * var(--u)) calc(14 * var(--u));border-radius:calc(12 * var(--u));
+    background:rgba(0,0,0,.3);border:calc(1 * var(--u)) solid var(--hair-2);color:#fff;font:inherit;font-size:calc(16 * var(--u));
+    font-variant-numeric:tabular-nums;outline:none;transition:border-color .2s,box-shadow .2s}
+  .ob-bal input:focus{border-color:var(--glow);box-shadow:0 0 0 calc(4 * var(--u)) color-mix(in oklab,var(--glow) 18%,transparent)}
+  .ob-bal-presets{display:flex;gap:calc(6 * var(--u))}
+  .ob-bal-presets button{padding:calc(10 * var(--u)) calc(14 * var(--u));border-radius:999px;border:calc(1 * var(--u)) solid var(--hair-2);
+    font-size:calc(13 * var(--u));font-weight:600;color:var(--text-2);cursor:pointer;transition:all .25s var(--e-spring)}
+  .ob-bal-presets button:hover{color:#fff;border-color:rgba(255,255,255,.35)}
+  .ob-bal-presets button[aria-pressed="true"]{background:var(--glow);color:#04131F;border-color:transparent;transform:scale(1.04)}
+
+  /* ---- best pick ---- */
+  .best-pick{display:block;width:100%;text-align:left;cursor:pointer;margin:0 0 10px;padding:14px 14px 13px;border-radius:18px;
+    border:1px solid rgba(74,222,128,.3);color:inherit;font:inherit;
+    background:radial-gradient(120% 140% at 0% 0%,rgba(74,222,128,.16),rgba(56,189,248,.06) 55%,rgba(255,255,255,.02));
+    box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 16px 40px -20px rgba(74,222,128,.45);
+    transition:transform .45s var(--spring),box-shadow .3s ease}
+  .best-pick[hidden]{display:none}
+  .best-pick:hover{transform:translateY(-2px);box-shadow:0 1px 0 rgba(255,255,255,.14) inset,0 22px 48px -20px rgba(74,222,128,.6)}
+  .best-pick:active{transform:scale(.985)}
+  .bp-eyebrow{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ok)}
+  .bp-main{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-top:6px}
+  .bp-main b{display:block;font-family:var(--font-display);font-size:19px;letter-spacing:-.01em;color:#fff}
+  .bp-main small{display:block;font-size:11px;color:var(--text-3);margin-top:2px}
+  .bp-val{text-align:right;flex:none}
+  .bp-val .num{display:block;font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--ok);line-height:1}
+  .bp-val small{font-size:10px}
+  .rd-value{margin-top:8px;font-size:12px;color:var(--text-3)}
+  .rd-value b{color:var(--ok);font-size:14px}
+  .saved-dot{color:#FDE68A;font-size:11px}
+
+  /* ---- trip board ---- */
+  .tb-empty{font-size:11.5px;color:var(--text-4);line-height:1.5;margin:0}
+  .tb-list{display:flex;flex-direction:column;gap:4px}
+  .tb-item{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;padding:8px 10px;border-radius:12px;
+    background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:inherit;font:inherit;cursor:pointer;transition:background .2s,transform .4s var(--spring)}
+  .tb-item:hover{background:rgba(255,255,255,.08);transform:translateX(2px)}
+  .tb-item b{display:block;font-size:12.5px;font-weight:600}
+  .tb-item small{display:block;font-size:10px;color:var(--text-4)}
+  .tb-item .num{font-size:12.5px;font-weight:600}
+  .tb-sum{margin-top:10px;display:flex;flex-direction:column;gap:4px}
+  .tb-cur{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-2)}
+  .tb-cur .num{margin-left:auto;color:var(--text-1)}
+  .tb-cur.over .num{color:#FCA5A5}
+  .tb-cur .card-dot{width:6px;height:6px}
+  .tb-verdict{margin-top:6px;font-size:11.5px;font-weight:600;padding:7px 10px;border-radius:10px}
+  .tb-verdict.ok{color:var(--ok);background:var(--ok-dim)}
+  .tb-verdict.no{color:#FCD34D;background:rgba(251,191,36,.1)}
+  #dlg-route-save-btn[aria-pressed="true"]{color:#FDE68A;border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.1)}
+
+  /* ---- toast ---- */
+  .toast{position:fixed;left:50%;bottom:24px;z-index:2000;transform:translate(-50%,20px) scale(.96);opacity:0;pointer-events:none;
+    padding:11px 18px;border-radius:999px;font-size:13px;font-weight:500;color:#fff;max-width:calc(100vw - 32px);
+    background:rgba(22,28,44,.72);-webkit-backdrop-filter:blur(24px) saturate(170%);backdrop-filter:blur(24px) saturate(170%);
+    border:1px solid rgba(255,255,255,.16);box-shadow:0 18px 40px -12px rgba(0,0,0,.6);
+    transition:opacity .3s ease,transform .5s var(--spring)}
+  .toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
+  @media (max-width:980px){ .toast{bottom:calc(84px + env(safe-area-inset-bottom))} }
 </style>
 </head>
 <body>
@@ -1205,11 +1288,19 @@
         <p>Milescope checks every route out of your home airport against every program that can book it,
            then shows the cheapest way your cards can pay for it.</p>
         <div class="ob-cta">
-          <button class="ob-btn" type="button" data-go="setup">Get started
+          <button class="ob-btn" type="button" data-go="setup">Plan with my cards
             <svg class="ob-arw" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
+          <button class="ob-btn ghost" type="button" data-demo>Explore a sample wallet</button>
+          <a class="ob-inline ob-cs-link" href="case-study.html">Read the product case study →</a>
         </div>
+        <dl class="ob-proof">
+          <div><dt class="ob-num" id="ob-proof-ap">72</dt><dd>airports</dd></div>
+          <div><dt class="ob-num">25</dt><dd>booking programs</dd></div>
+          <div><dt class="ob-num">5</dt><dd>card currencies</dd></div>
+          <div><dt class="ob-num" id="ob-proof-bonus">5</dt><dd>transfer bonuses live</dd></div>
+        </dl>
       </div>
       <div class="ob-marquee" aria-hidden="true"><div class="ob-mq-track" id="ob-mq"></div></div>
     </section>
@@ -1292,6 +1383,12 @@
            this any time from the wallet panel.</p>
         <div class="ob-grid" id="ob-grid"></div>
       </div>
+      <div class="ob-block ob-bal-block" id="ob-bal-block" hidden>
+        <div class="ob-block-head"><u>03</u><h2>Roughly how many points?</h2></div>
+        <p>Ballpark is fine. Tap a preset or type a number. This is what turns “possible” into “you can book
+           this.” It stays in this browser.</p>
+        <div class="ob-bals" id="ob-bals"></div>
+      </div>
     </div>
   </section>
 
@@ -1343,6 +1440,7 @@
     <button type="button" id="nav-deals"><span class="dot" aria-hidden="true"></span>Latest deals</button>
     <button type="button" id="nav-card">Find a card</button>
     <button type="button" id="nav-edu">Transfer partners</button>
+    <a class="nav-cs" href="case-study.html">Case study</a>
   </nav>
   <button class="home-pill" id="home-pill-btn" type="button">✈ <span id="home-pill-text">SEA · Seattle</span> ▾</button>
   <button class="icon-btn" id="btn-settings" type="button" aria-label="Settings">⚙</button>
@@ -1395,6 +1493,10 @@
         </div>
       </div>
     </div>
+    <div class="sb-block">
+      <div class="sb-label">Trip board</div>
+      <div id="trip-board"></div>
+    </div>
     <div class="gauge-foot">
       <div class="ratio"><span class="dot" aria-hidden="true"></span><span class="num"><span id="gauge-aff">0</span> / <span id="gauge-total">0</span></span> routes affordable</div>
       <div class="cap" id="gauge-cap" aria-live="polite">Enable a program and check your balance.</div>
@@ -1438,11 +1540,13 @@
       <label class="sr-only" for="sel-sort">Sort by</label>
       <select id="sel-sort">
         <option value="points">Lowest points</option>
+        <option value="value">Best value (¢/pt)</option>
         <option value="distance">Longest distance</option>
         <option value="alpha">Alphabetical</option>
       </select>
     </div>
     <div class="list-count num" id="list-count" aria-live="polite"></div>
+    <button type="button" class="best-pick" id="best-pick" hidden></button>
     <div class="rows" id="rows"></div>
     <div class="load-more" id="load-more-wrap" hidden>
       <button class="btn small" id="btn-load-more" type="button">Show more routes</button>
@@ -1470,6 +1574,7 @@
   </div>
   <div class="dlg-body" id="dlg-route-body"></div>
   <div class="dlg-foot">
+    <button class="btn" id="dlg-route-save-btn" type="button">☆ Save trip</button>
     <button class="btn" id="dlg-route-card-btn" type="button">Find the right card</button>
     <button class="btn primary" data-close="dlg-route" type="button">Done</button>
   </div>
@@ -1549,21 +1654,16 @@
   </div>
 </dialog>
 
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <footer class="foot">Award prices are published-chart estimates ("~" = dynamically priced). Live seats come from seats.aero. Transfer partners and bonuses checked September 2026. Always confirm on the airline's site before transferring points; transfers can't be undone.</footer>
 
-<script src="vendor/globe.gl.min.js"></script>
-<!-- Fallback if vendor/globe.gl.min.js isn't present (e.g. opening this file
-     straight off disk). document.write is used deliberately: it's the one
-     way to pull in a replacement script synchronously, so Globe is defined
-     before the inline script below runs. Drop this line in production. -->
-<script>if(typeof Globe==="undefined"){document.write('<script src="https://unpkg.com/globe.gl"><\/script>');}</script>
-<script>if(typeof Globe==="undefined"){document.write('<script src="https://cdn.jsdelivr.net/npm/globe.gl"><\/script>');}</script>
-<script src="vendor/countries-topo.js"></script>
-<!-- The land plates are load-bearing for the globe's look now, so if
-     vendor/countries-topo.js is missing the shapes are pulled from a CDN
-     instead. Drop these two lines once the vendor file is deployed. -->
-<script>if(typeof COUNTRIES_TOPO==="undefined"){document.write('<script src="https://unpkg.com/topojson-client@3"><\/script>');}</script>
-<script src="vendor/country-labels.js"></script>
+<!-- Globe libraries, pinned to exact versions and loaded as ordinary blocking
+     scripts (not document.write, which Chrome may skip on slow connections;
+     that was the "globe never shows up" failure). jsdelivr first; unpkg only
+     if jsdelivr itself is unreachable. -->
+<script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js" crossorigin="anonymous"></script>
+<script>if(typeof Globe==="undefined"){document.write('<script src="https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js"><\/script>');}</script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" crossorigin="anonymous"></script>
 <script>
 (function(){
 "use strict";
@@ -2071,6 +2171,16 @@ function routeCurrency(route, cabin){
 }
 function curName(id){ return (PMAP[id] && PMAP[id].short) || id; }
 
+/* ===================== PRODUCT ANALYTICS =====================
+   The funnel the case study's metrics are defined on:
+   landing → onboarding_complete | demo_start → route_open → plan_viewed
+   → live_check → trip_saved. Sent to Vercel Web Analytics custom events
+   when that's enabled on the project; a silent no-op otherwise. */
+window.va = window.va || function(){ (window.vaq = window.vaq || []).push(arguments); };
+function track(name, data){
+  try{ window.va("event", {name:name, data:data||{}}); }catch(e){}
+}
+
 /* ===================== STATE ===================== */
 
 var qs = new URLSearchParams(location.search);
@@ -2094,6 +2204,7 @@ function loadPersisted(){
     }
   }catch(e){ /* storage unavailable, fall through to demo defaults */ }
   state.wallet = Object.assign({}, DEMO_WALLET);
+  state.walletIsDemo = true;
   PROGRAMS.forEach(function(p){ state.enabled[p.id] = (state.wallet[p.id]||0) > 0; });
 }
 function persist(){
@@ -2151,6 +2262,7 @@ function walletRow(p){
   });
   numInput.addEventListener("input",function(e){
     var v = parseInt(e.target.value,10); state.wallet[p.id] = isNaN(v)?0:Math.max(0,v);
+    state.walletIsDemo = false;
     persist(); renderAll();
   });
   return row;
@@ -2276,6 +2388,7 @@ function currentRoutes(){
 function sortRoutes(list){
   var l = list.slice();
   if(state.sort==="points") l.sort(function(a,b){ return a.pricing[state.cabin].minPoints-b.pricing[state.cabin].minPoints; });
+  else if(state.sort==="value") l.sort(function(a,b){ return centsPerPoint(b,state.cabin)-centsPerPoint(a,state.cabin); });
   else if(state.sort==="distance") l.sort(function(a,b){ return b.distanceMiles-a.distanceMiles; });
   else l.sort(function(a,b){ return a.dest.city.localeCompare(b.dest.city); });
   return l;
@@ -2300,6 +2413,7 @@ function renderAll(){
   renderLegend();
   renderGlobe(all);
   renderList();
+  if(typeof renderTrips==="function") renderTrips();
 }
 
 /* ===================== GLOBE ===================== */
@@ -2315,7 +2429,7 @@ function applyCountries(g){
 function loadCountriesFallback(){
   if(typeof COUNTRIES_TOPO !== "undefined" && COUNTRIES_TOPO.features) return;
   if(typeof topojson === "undefined" || !topojson.feature) return;
-  fetch("https://unpkg.com/world-atlas@2/countries-110m.json")
+  fetch("https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json")
     .then(function(r){ if(!r.ok) throw new Error("no atlas"); return r.json(); })
     .then(function(topo){
       var fc = topojson.feature(topo, topo.objects.countries);
@@ -2361,9 +2475,8 @@ var LAND_SIDE   = "rgba(150,172,204,0.28)";
    a local vendor copy is preferred, a CDN covers this file being opened
    straight off disk, and neither being reachable is handled below. */
 var GLOBE_TEX_SOURCES = [
-  "vendor/earth-night.jpg",
-  "https://unpkg.com/three-globe/example/img/earth-night.jpg",
-  "https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg"
+  "https://cdn.jsdelivr.net/npm/three-globe@2.45.2/example/img/earth-night.jpg",
+  "https://unpkg.com/three-globe@2.45.2/example/img/earth-night.jpg"
 ];
 var texState = {done:false, tex:null, fallback:false};
 var skinnedGlobes = [], resolvingTex = false, globeTextureFallback = false;
@@ -2877,6 +2990,7 @@ function selectRoute(route, opts){
   if(World){
     var coords = World.getScreenCoords(route.dest.lat, route.dest.lng, 0.02);
     var stage = mapStage.getBoundingClientRect();
+    coords.x += globeContainer.offsetLeft;
     var left = Math.min(Math.max(coords.x-146,8), stage.width-300);
     var top = Math.min(Math.max(coords.y+16,8), stage.height-8);
     stripEl.style.left = left+"px"; stripEl.style.top = top+"px";
@@ -2939,6 +3053,7 @@ function renderAvailability(el, data, route){
 function wireAvailability(btn, el, route){
   btn.addEventListener("click",function(){
     btn.disabled = true; btn.textContent = "Checking seats.aero…";
+    track("live_check", {route:route.originIata+"-"+route.destIata, cabin:state.cabin});
     el.innerHTML = '<div class="live-skel"><i></i><i></i><i></i></div>';
     fetchAvailability(route.originIata, route.destIata, state.cabin)
       .then(function(data){ renderAvailability(el, data, route); btn.remove(); })
@@ -2985,6 +3100,139 @@ function fetchLiveStatus(){
     .then(function(){ updateLiveStatusUI(liveMeta); });
 }
 
+/* ===================== VALUE (cents per point) =====================
+   The number points travelers actually decide on: what the seat would cost
+   in cash, divided by the miles it takes. Cash fares are TYPICAL one-way
+   fares from the US by zone and cabin, not a live quote; the UI always
+   labels them "est." and they only drive ranking, never affordability. */
+var CASH_FARE = {
+  latN:[350,1100], latS:[650,2800], eur:[550,3500], asia1:[750,4500],
+  asia2:[850,5000], me:[800,4500], oce:[1000,5500], afr:[900,4500]
+};
+function estCash(route, cabin){
+  var z = zoneOf(route.dest), ci = cabin==="business" ? 1 : 0, base;
+  if(z==="na"){
+    var d = route.distanceMiles;
+    base = d<=500 ? [150,375] : d<=1500 ? [220,550] : [300,800];
+  }else base = CASH_FARE[z] || [600,3500];
+  return base[ci] * tripMultiplier();
+}
+function centsPerPoint(route, cabin, plan){
+  var p = plan || planRoute(route, cabin).best;
+  if(!p || !p.need) return 0;
+  return estCash(route, cabin) / p.need * 100;
+}
+function fmtCpp(c){ return c ? c.toFixed(1)+"¢" : "–"; }
+
+/* ===================== TRIP BOARD =====================
+   Save routes, see the combined cost per card, and whether one wallet
+   covers the whole set (each trip's best plan, summed per currency). */
+var TRIPS_KEY = "milescope_trips_v1";
+var trips = [];
+try{ trips = JSON.parse(localStorage.getItem(TRIPS_KEY) || "[]") || []; }catch(e){ trips = []; }
+function tripId(r, cabin){ return r.originIata+"|"+r.destIata+"|"+cabin; }
+function isSaved(r, cabin){ return trips.some(function(t){ return t.id===tripId(r, cabin); }); }
+function saveTrips(){ try{ localStorage.setItem(TRIPS_KEY, JSON.stringify(trips)); }catch(e){} }
+function toggleTrip(r, cabin){
+  var id = tripId(r, cabin);
+  if(isSaved(r, cabin)){
+    trips = trips.filter(function(t){ return t.id!==id; });
+    toast("Removed "+r.dest.city+" from your trip board");
+  }else{
+    trips.push({id:id, origin:r.originIata, dest:r.destIata, cabin:cabin});
+    toast(r.dest.city+" saved to your trip board");
+    track("trip_saved", {route:r.originIata+"-"+r.destIata, cabin:cabin});
+  }
+  saveTrips(); renderTrips(); renderList();
+}
+function findRoute(origin, dest){
+  return routesForOrigin(origin).filter(function(r){ return r.destIata===dest; })[0] || null;
+}
+function renderTrips(){
+  var host = document.getElementById("trip-board"); if(!host) return;
+  var rows = trips.map(function(t){ var r = findRoute(t.origin, t.dest); return r ? {t:t, r:r, plan:planRoute(r, t.cabin).best} : null; })
+    .filter(Boolean);
+  if(!rows.length){
+    host.innerHTML = '<p class="tb-empty">Save routes from any route’s detail view to compare a whole year of trips against your wallet.</p>';
+    return;
+  }
+  var spend = {}, allOk = true;
+  rows.forEach(function(x){
+    if(!x.plan || x.plan.status==="short"){ allOk = false; return; }
+    x.plan.steps.forEach(function(s){ spend[s.cur] = (spend[s.cur]||0) + s.pts; });
+  });
+  var over = Object.keys(spend).filter(function(c){ return spend[c] > (state.wallet[c]||0); });
+  var coversAll = allOk && !over.length;
+  host.innerHTML =
+    '<div class="tb-list">'+rows.map(function(x){
+      var p = x.plan;
+      return '<button type="button" class="tb-item" data-o="'+x.t.origin+'" data-d="'+x.t.dest+'" data-c="'+x.t.cabin+'">'+
+        '<span><b>'+x.r.dest.city+'</b><small>'+x.t.origin+' → '+x.t.dest+' · '+x.t.cabin+'</small></span>'+
+        '<span class="num">'+(p ? fmtK(p.need) : "–")+'</span></button>';
+    }).join("")+'</div>'+
+    '<div class="tb-sum">'+
+      Object.keys(spend).map(function(c){
+        var short = spend[c] > (state.wallet[c]||0);
+        return '<div class="tb-cur'+(short?" over":"")+'">'+dot(c)+curName(c)+'<span class="num">'+fmtK(spend[c])+' / '+fmtK(state.wallet[c]||0)+'</span></div>';
+      }).join("")+
+      '<div class="tb-verdict '+(coversAll?"ok":"no")+'">'+(coversAll
+        ? "Your wallet covers all "+rows.length+" trip"+(rows.length===1?"":"s")
+        : (allOk ? "Over budget on "+over.map(curName).join(", ") : "Some saved trips aren’t bookable yet"))+'</div>'+
+    '</div>';
+  Array.prototype.forEach.call(host.querySelectorAll(".tb-item"), function(b){
+    b.addEventListener("click", function(){
+      var r = findRoute(b.getAttribute("data-o"), b.getAttribute("data-d"));
+      if(!r) return;
+      if(state.cabin !== b.getAttribute("data-c")){
+        state.cabin = b.getAttribute("data-c");
+        Array.prototype.forEach.call(document.querySelectorAll("#cabin-toggle button"), function(x){ x.setAttribute("aria-checked", x.getAttribute("data-cabin")===state.cabin?"true":"false"); });
+        renderAll();
+      }
+      openRouteDetail(r);
+    });
+  });
+}
+
+/* ===================== BEST PICK =====================
+   The single answer most visitors came for, above the list: the highest
+   value route they can book right now with what they hold. */
+function renderBestPick(list){
+  var host = document.getElementById("best-pick"); if(!host) return;
+  var best = null;
+  list.forEach(function(r){
+    var p = planRoute(r, state.cabin).best;
+    if(!p || p.status==="short") return;
+    var c = centsPerPoint(r, state.cabin, p);
+    if(!best || c > best.c) best = {r:r, p:p, c:c};
+  });
+  if(!best){ host.hidden = true; return; }
+  host.hidden = false;
+  host.innerHTML =
+    '<div class="bp-eyebrow">Best value you can book now</div>'+
+    '<div class="bp-main"><div><b>'+best.r.dest.city+'</b><small>'+best.r.originIata+' → '+best.r.destIata+' · '+state.cabin+' · '+BOOK_SHORT[best.p.opt.program]+'</small></div>'+
+    '<div class="bp-val"><span class="num">'+fmtCpp(best.c)+'</span><small>per point, est.</small></div></div>';
+  host.onclick = function(){ openRouteDetail(best.r); };
+}
+
+/* ===================== TOASTS + SHORTCUTS ===================== */
+var toastTimer = null;
+function toast(msg){
+  var el = document.getElementById("toast"); if(!el) return;
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+}
+document.addEventListener("keydown", function(e){
+  var tag = (e.target && e.target.tagName) || "";
+  if(e.key==="/" && !/INPUT|TEXTAREA|SELECT/.test(tag) && !document.querySelector("dialog[open]")){
+    var ob = document.getElementById("onboarding"); if(ob && !ob.hidden) return;
+    e.preventDefault();
+    if(window.matchMedia("(max-width:980px)").matches){
+      var t = document.querySelector('.mobiletabs [data-panel="routes"]'); if(t) t.click();
+    }
+    document.getElementById("search-input").focus();
+  }
+});
+
 /* ===================== ROUTE LIST ===================== */
 
 var rowsEl = document.getElementById("rows"), listCountEl = document.getElementById("list-count");
@@ -3009,6 +3257,7 @@ function renderList(){
   rowsEl.classList.toggle("enter", sig!==lastListSig);
   lastListSig = sig;
   rowsEl.innerHTML = shown.map(rowHtml).join("");
+  renderBestPick(all);
   loadMoreWrap.hidden = shown.length>=visible.length;
 
   Array.prototype.forEach.call(rowsEl.querySelectorAll(".row-card"),function(row){
@@ -3029,14 +3278,14 @@ function rowHtml(r, i){
   var otherCabin = state.cabin==="economy" ? "business" : "economy";
   var other = r.pricing[otherCabin].minPoints * tripMultiplier();
   return '<button type="button" class="row-card'+(ok?" ok":"")+'" data-dest="'+r.destIata+'" style="--i:'+Math.min(i,14)+'">'+
-    '<div class="left"><div class="city">'+r.dest.city+(r.sweet?'<span class="sweet-dot" title="Sweet spot" aria-label="Sweet spot">★</span>':"")+'</div>'+
+    '<div class="left"><div class="city">'+r.dest.city+(isSaved(r,state.cabin)?'<span class="saved-dot" title="On your trip board">★</span>':'')+(r.sweet?'<span class="sweet-dot" title="Sweet spot" aria-label="Sweet spot">★</span>':"")+'</div>'+
     '<div class="codes-line"><span class="o">'+r.originIata+'</span> → <span class="d">'+r.destIata+'</span> '+r.dest.country+
       (r.isNonstop?' <span class="ns">nonstop</span>':' <span class="stop">connecting</span>')+'</div>'+
     '<div class="badges">'+r.operatingCarriers.slice(0,3).map(function(c){return '<span class="badge">'+c+'</span>';}).join("")+'</div></div>'+
     '<div class="right"><div class="pts num">'+(best&&best.opt.dyn?"~":"")+(best?fmtPts(best.need):"–")+'</div>'+
     '<div class="pts-lbl">'+via+'</div>'+
     '<div class="row-status'+(ok?" ok":"")+'">'+(ok ? dot(cur)+(best.status==="combo"?"Pool & book":"Bookable") : (best && best.reachable ? "Short "+fmtK(best.shortBy) : "Not in wallet"))+'</div>'+
-    '<div class="pts-alt num">'+otherCabin.charAt(0).toUpperCase()+otherCabin.slice(1)+' ~'+fmtK(other)+'</div></div>'+
+    '<div class="pts-alt num">'+(best?fmtCpp(centsPerPoint(r,state.cabin,best))+'/pt · ':'')+otherCabin.charAt(0).toUpperCase()+otherCabin.slice(1)+' ~'+fmtK(other)+'</div></div>'+
     '</button>';
 }
 loadMoreBtn.addEventListener("click",function(){ state.listBatch+=30; renderList(); });
@@ -3061,7 +3310,8 @@ function openRouteDetail(route){
     '</div>'+
     '<div class="rd-hero">'+
       '<div class="rd-price"><span class="num" data-count="'+(best?best.need:0)+'">'+(best?(best.opt.dyn?"~":"")+fmtPts(best.need):"–")+'</span>'+
-        '<small>'+(best?BOOK_PROGRAMS[best.opt.program]:"")+' · '+state.cabin+' · '+tripLabel()+'</small></div>'+
+        '<small>'+(best?BOOK_PROGRAMS[best.opt.program]:"")+' · '+state.cabin+' · '+tripLabel()+'</small>'+
+        (best ? '<div class="rd-value"><b class="num">'+fmtCpp(centsPerPoint(route,state.cabin,best))+'</b> per point vs. an est. $'+fmtPts(estCash(route,state.cabin))+' cash fare</div>' : '')+'</div>'+
       verdictHtml(best)+
       (best && best.steps.length ? '<div class="rd-plan"><div class="rd-label">Your transfer plan</div>'+stepsHtml(best)+'</div>' : '')+
     '</div>'+
@@ -3079,9 +3329,18 @@ function openRouteDetail(route){
       '<li>Move only what you need, in the issuer’s 1,000-point steps. Taxes and surcharges are paid in cash.</li>'+
     '</ol></details>';
   wireAvailability(document.getElementById("rd-live-btn"), document.getElementById("rd-live-out"), route);
+  syncSaveBtn(route);
+  track("route_open", {route:route.originIata+"-"+route.destIata, cabin:state.cabin, bookable:!!(best && best.status!=="short")});
   dlgRoute.showModal();
   tweenNumbers(dlgRoute);
 }
+function syncSaveBtn(route){
+  var b = document.getElementById("dlg-route-save-btn"), on = isSaved(route, state.cabin);
+  b.textContent = on ? "★ Saved" : "☆ Save trip"; b.setAttribute("aria-pressed", String(on));
+}
+document.getElementById("dlg-route-save-btn").addEventListener("click",function(){
+  if(!state.selectedRoute) return; toggleTrip(state.selectedRoute, state.cabin); syncSaveBtn(state.selectedRoute);
+});
 document.getElementById("dlg-route-card-btn").addEventListener("click",function(){
   dlgRoute.close(); openCardDialog(state.selectedRoute);
 });
@@ -3225,6 +3484,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#cabin-toggle button'),f
 initGlobe();
 loadCountriesFallback();
 renderAll();
+renderTrips();
 updateLiveStatusUI(null);
 fetchLiveStatus();
 
@@ -3637,6 +3897,49 @@ function updateTally(){
     progEl.textContent  = "Switching on "+progs.map(function(id){ return PMAP[id].short; }).join(", ");
     cont.childNodes[0].nodeValue = "Open the map";
   }
+  renderBalances(progs);
+}
+
+/* ══ setup: balances ════════════════════════════════════════════
+   Picking a card only says WHICH currencies you hold; without an amount
+   every route reads as "not in wallet" (or, before this step existed, the
+   app quietly kept fake demo balances). One row per picked currency, with
+   presets so nobody has to type 100000 on a phone. */
+var obBal = {};
+var BAL_PRESETS = [25000, 50000, 100000, 200000];
+function renderBalances(progs){
+  var block = document.getElementById("ob-bal-block"), host = document.getElementById("ob-bals");
+  block.hidden = !progs.length;
+  if(!progs.length) return;
+  progs.forEach(function(id){
+    if(obBal[id]===undefined) obBal[id] = state.walletIsDemo ? "" : (state.wallet[id] || "");
+  });
+  host.innerHTML = progs.map(function(id){
+    var p = PMAP[id], v = obBal[id];
+    return '<div class="ob-bal" style="--glow:'+p.color+'">'+
+      '<label for="ob-bal-'+id+'"><i aria-hidden="true"></i>'+p.name+'</label>'+
+      '<div class="ob-bal-row"><input id="ob-bal-'+id+'" data-prog="'+id+'" type="text" inputmode="numeric" autocomplete="off" '+
+        'placeholder="e.g. 60,000" value="'+(v?fmtPts(v):"")+'">'+
+      '<div class="ob-bal-presets">'+BAL_PRESETS.map(function(n){
+        return '<button type="button" data-prog="'+id+'" data-v="'+n+'" aria-pressed="'+(+v===n)+'">'+fmtK(n)+'</button>';
+      }).join("")+'</div></div></div>';
+  }).join("");
+  Array.prototype.forEach.call(host.querySelectorAll("input"), function(inp){
+    inp.addEventListener("input", function(){
+      var n = parseInt(inp.value.replace(/[^\d]/g,""),10);
+      obBal[inp.getAttribute("data-prog")] = isNaN(n) ? "" : n;
+      Array.prototype.forEach.call(inp.parentNode.querySelectorAll("button"), function(b){ b.setAttribute("aria-pressed", String(+b.getAttribute("data-v")===n)); });
+    });
+    inp.addEventListener("blur", function(){ var v = obBal[inp.getAttribute("data-prog")]; inp.value = v ? fmtPts(v) : ""; });
+  });
+  Array.prototype.forEach.call(host.querySelectorAll("button[data-v]"), function(b){
+    b.addEventListener("click", function(){
+      var id = b.getAttribute("data-prog"), n = +b.getAttribute("data-v");
+      obBal[id] = n;
+      var inp = document.getElementById("ob-bal-"+id); inp.value = fmtPts(n);
+      Array.prototype.forEach.call(b.parentNode.children, function(x){ x.setAttribute("aria-pressed", String(x===b)); });
+    });
+  });
 }
 
 /* ══ modes + finish ═════════════════════════════════════════════ */
@@ -3665,6 +3968,12 @@ function finish(apply){
     if(touchedCards){
       PROGRAMS.forEach(function(p){ state.enabled[p.id] = false; });
       pickedCards().forEach(function(c){ state.enabled[c.program] = true; });
+      /* balances: whatever they entered; a blank means "don't know yet" = 0,
+         never the demo number, so the map can't claim a trip they can't book */
+      if(state.walletIsDemo){ PROGRAMS.forEach(function(p){ state.wallet[p.id] = 0; }); }
+      Object.keys(obBal).forEach(function(id){ if(state.enabled[id]) state.wallet[id] = +obBal[id] || 0; });
+      state.walletIsDemo = false;
+      track("onboarding_complete", {cards: pickedCards().length});
     }
     state.home = homeIata;
     persist(); renderHomePill(); syncUrl();
@@ -3707,6 +4016,18 @@ function wireOnboarding(){
       finish(false);
     });
   });
+  Array.prototype.forEach.call(root.querySelectorAll("[data-demo]"), function(b){
+    b.addEventListener("click", function(){
+      state.wallet = Object.assign({}, DEMO_WALLET); state.walletIsDemo = true;
+      PROGRAMS.forEach(function(p){ state.enabled[p.id] = (state.wallet[p.id]||0) > 0; });
+      track("demo_start");
+      finish(false);
+      toast("Sample wallet loaded. Edit the balances on the left to make it yours.");
+    });
+  });
+  var apEl = document.getElementById("ob-proof-ap"); if(apEl) apEl.textContent = AIRPORTS.length;
+  var bnEl = document.getElementById("ob-proof-bonus");
+  if(bnEl) bnEl.textContent = BONUSES.filter(function(b){ return Date.now() <= new Date(b.ends+"T23:59:59").getTime(); }).length;
   document.getElementById("ob-back-btn").addEventListener("click", function(){ setMode("landing"); });
   document.getElementById("ob-continue-btn").addEventListener("click", function(){ finish(true); });
   // "I already have a key" hands straight off to the app's Settings dialog,
@@ -3779,5 +4100,8 @@ initOnboarding();
 
 })();
 </script>
+<!-- Vercel Web Analytics: page views + the custom funnel events in track().
+     Serves only once Analytics is enabled on the Vercel project. -->
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

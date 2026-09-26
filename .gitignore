@@ -2,3 +2,4 @@
 .original.html
 .vercel
 .env*
+.claude/
