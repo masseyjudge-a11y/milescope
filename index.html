@@ -7,7 +7,8 @@
 <meta name="description" content="See which award routes your points can actually book, and what's new in transfer partner deals.">
 <meta property="og:title" content="Milescope">
 <meta property="og:description" content="An award-chart flight explorer for transferable credit card points.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23030711'/%3E%3Ccircle cx='16' cy='16' r='9' fill='%2338BDF8'/%3E%3C/svg%3E">
+<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&display=swap">
@@ -71,8 +72,7 @@
        gradient dot underneath as a fallback, if the top image layer can't
        load (e.g. blocked host in a sandboxed viewer), it contributes nothing
        and the gradient shows through untouched, no broken-image glyph. */
-    background-image:url("https://d8j0ntlcm91z4.cloudfront.net/user_3InKtxP6VpMj6j152yOotqWquZm/hf_20260903_054425_7593a4cb-612d-4058-bd90-765a8550d67a.png"),
-      radial-gradient(circle at 30% 30%,var(--accent-strong),var(--accent) 60%,#0B4A63);
+    background-image:url("logo.svg");
     background-size:cover,cover;
     background-position:center,center;
   }
@@ -541,10 +541,7 @@
     transition:background .35s ease,backdrop-filter .35s ease,border-color .35s ease}
   #onboarding.scrolled .ob-top,#onboarding:not(.mode-landing) .ob-top{
     background:rgba(3,7,17,.74);backdrop-filter:blur(calc(14 * var(--u)));border-bottom-color:var(--hair)}
-  .ob-mark{width:calc(22 * var(--u));height:calc(22 * var(--u));border-radius:calc(7 * var(--u));flex:none;
-    background-image:url("https://d8j0ntlcm91z4.cloudfront.net/user_3InKtxP6VpMj6j152yOotqWquZm/hf_20260903_054425_7593a4cb-612d-4058-bd90-765a8550d67a.png"),
-      radial-gradient(circle at 30% 28%,#7DD3FC,#38BDF8 60%,#0B4A63);
-    background-size:cover,cover;background-position:center,center}
+  .ob-mark{width:calc(22 * var(--u));height:calc(22 * var(--u));border-radius:calc(7 * var(--u));flex:none;background:url("logo.svg") center/cover no-repeat}
   .ob-wordmark{font-family:var(--serif);font-weight:600;font-size:calc(16.5 * var(--u));letter-spacing:calc(-.35 * var(--u))}
   .ob-crumbs{margin-left:auto;display:flex;align-items:center;gap:calc(9 * var(--u));font-size:calc(12 * var(--u));color:var(--text-3)}
   .ob-crumbs b{font-weight:500;color:var(--text-3);transition:color .3s ease}
@@ -1418,6 +1415,18 @@
   .nl-chip{background:rgba(56,189,248,.12) !important}
   .chip{padding:8px 14px !important}
   .mobiletabs .seg-thumb{border-radius:var(--r-ctl) !important}
+
+  /* ---- partner strip: official names + icons ---- */
+  .ob-mq-item img{width:calc(18 * var(--u));height:calc(18 * var(--u));border-radius:2px;flex:none;object-fit:contain;
+    background:#fff;padding:1px;opacity:.9}
+  .ob-mq-item b{font-weight:500;color:var(--text-2)}
+  .ob-mq-item{gap:calc(10 * var(--u));padding:0 calc(26 * var(--u))}
+  .ob-hero h1{margin-top:0}
+
+  /* ---- brand mark ---- */
+  .brand .mark{box-shadow:none !important;background:url("logo.svg") center/cover no-repeat !important;border-radius:3px !important}
+  .ob-mark{background:url("logo.svg") center/cover no-repeat !important;box-shadow:none !important;border-radius:calc(4 * var(--u)) !important}
+  .ob-mark::before,.ob-mark::after{display:none !important}
 </style>
 </head>
 <body>
@@ -1469,7 +1478,6 @@
   <div class="ob-landing">
     <section class="ob-hero">
       <div class="ob-wrap">
-        <span class="ob-eyebrow"><i aria-hidden="true"></i>Current as of September 2026</span>
         <h1 data-split>Know exactly where your points can fly you.</h1>
         <p>Add your cards and points. See every flight you can book, and the cheapest way to pay.</p>
         <div class="ob-cta">
@@ -3858,8 +3866,13 @@ var ONBOARD_CARDS = [
   {id:"bilt",         name:"Bilt Mastercard",          program:"bilt",     net:"MASTERCARD",     tag:"Points on rent",       tint:["#2E2A26","#0D0B09"], art:null},
   {id:"citi_premier", name:"Citi Strata Premier",      program:"citi_typ", net:"MASTERCARD",     tag:"Bonus categories",     tint:["#24405E","#0A1726"], art:null}
 ];
-var MARQUEE = ["Flying Blue","Avios","ANA Mileage Club","KrisFlyer","LifeMiles","Atmos Rewards",
-  "Asia Miles","Miles&Smiles","JAL Mileage Bank","Iberia Plus","Skywards","Qantas Frequent Flyer"];
+/* Official program names, with each airline's own site icon (self-hosted in /logos). */
+var MARQUEE = [
+  ["Air France KLM Flying Blue","flyingblue"], ["British Airways Club","britishairways"], ["ANA Mileage Club","ana"],
+  ["Singapore Airlines KrisFlyer","singaporeair"], ["Avianca LifeMiles","lifemiles"], ["Alaska Airlines Atmos Rewards","alaskaair"],
+  ["Cathay Asia Miles","cathaypacific"], ["Turkish Airlines Miles&Smiles","turkishairlines"], ["JAL Mileage Bank","jal"],
+  ["Iberia Club","iberia"], ["Emirates Skywards","emirates"], ["Qantas Frequent Flyer","qantas"]
+];
 var QUICK_HOMES = ["AUS","SEA","JFK","LAX","ORD","DFW"];
 
 /* the routes the hero globe flies, hub pairs that read well on a turning
@@ -4115,7 +4128,7 @@ function spotlight(){
 /* ══ landing content ════════════════════════════════════════════ */
 function renderMarquee(){
   var one = MARQUEE.map(function(n){
-    return '<span class="ob-mq-item"><i aria-hidden="true"></i><b>'+n+'</b></span>';
+    return '<span class="ob-mq-item"><img src="logos/'+n[1]+'.png" alt="" width="18" height="18" loading="lazy" decoding="async"><b>'+n[0].replace("&","&amp;")+'</b></span>';
   }).join("");
   document.getElementById("ob-mq").innerHTML = one + one;   // two copies → seamless -50% loop
 }
