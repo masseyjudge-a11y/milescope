@@ -1417,8 +1417,11 @@
   .mobiletabs .seg-thumb{border-radius:var(--r-ctl) !important}
 
   /* ---- partner strip: official names + icons ---- */
-  .ob-mq-item img{width:calc(18 * var(--u));height:calc(18 * var(--u));border-radius:2px;flex:none;object-fit:contain;
-    background:#fff;padding:1px;opacity:.9}
+  .ob-mq-item img{width:calc(18 * var(--u));height:calc(18 * var(--u));border-radius:2px;flex:none;object-fit:contain}
+  /* The partner strip keeps scrolling even with Reduce Motion on: it's a slow,
+     linear, low-contrast drift, and it pauses on hover or keyboard focus. */
+  #onboarding .ob-mq-track{animation:ob-mq 48s linear infinite !important}
+  #onboarding .ob-marquee:hover .ob-mq-track,#onboarding .ob-marquee:focus-within .ob-mq-track{animation-play-state:paused !important}
   .ob-mq-item b{font-weight:500;color:var(--text-2)}
   .ob-mq-item{gap:calc(10 * var(--u));padding:0 calc(26 * var(--u))}
   .ob-hero h1{margin-top:0}
