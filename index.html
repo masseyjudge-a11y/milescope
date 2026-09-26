@@ -1222,6 +1222,7 @@
   .bp-val small{font-size:10px}
   .rd-value{margin-top:8px;font-size:12px;color:var(--text-3)}
   .rd-value b{color:var(--ok);font-size:14px}
+  .rd-price .rd-value .num{display:inline;font-family:var(--font);font-size:14px;letter-spacing:0;line-height:inherit}
   .saved-dot{color:#FDE68A;font-size:11px}
 
   /* ---- trip board ---- */
@@ -1251,9 +1252,130 @@
     transition:opacity .3s ease,transform .5s var(--spring)}
   .toast.show{opacity:1;transform:translate(-50%,0) scale(1)}
   @media (max-width:980px){ .toast{bottom:calc(84px + env(safe-area-inset-bottom))} }
+
+  /* ══════════════════════════════════════════════════════════════════
+     LIQUID GLASS v2: refraction, specular light, fluid controls
+     ══════════════════════════════════════════════════════════════════ */
+  .ico{width:16px;height:16px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+  .ico.sm{width:13px;height:13px;vertical-align:-2px}
+  .home-pill{gap:8px}
+  .home-pill .ico.sm{opacity:.7;transition:transform .4s var(--spring)}
+  .home-pill:hover .ico.sm{transform:translateY(1px)}
+  .icon-btn .ico{width:16px;height:16px}
+  .search-wrap .ic.ico{width:15px;height:15px;left:11px;color:var(--text-3)}
+  .strip-x .ico{width:13px;height:13px}
+  .vd-ic .ico{width:12px;height:12px;stroke-width:2.6}
+  .pick-check .ico{width:calc(15 * var(--u));height:calc(15 * var(--u));stroke-width:3}
+  .saved-dot .ico{width:12px;height:12px;fill:#FDE68A;stroke:#FDE68A}
+  .live-link .ico,.live-empty .ico{width:12px;height:12px}
+  #dlg-route-save-btn[aria-pressed="true"] .ico{fill:#FDE68A;stroke:#FDE68A}
+  #dlg-route-save-btn .ico{transition:transform .5s var(--spring)}
+  #dlg-route-save-btn[aria-pressed="true"] .ico{transform:rotate(72deg) scale(1.15)}
+  .dlg-head .btn.ghost{width:34px;height:34px;padding:0;justify-content:center;border-radius:50%;background:rgba(255,255,255,.06)}
+  .sweet-tag.sm{font-size:8.5px;padding:1px 6px;letter-spacing:.04em}
+
+  /* refraction: panels get a per-size SVG displacement lens (see glass
+     engine in JS). Only Chromium can run SVG filters inside
+     backdrop-filter; everyone else keeps the frosted blur. */
+  html.lg-refract .wallet-col{backdrop-filter:url(#lg-wallet) blur(22px) saturate(175%)}
+  html.lg-refract .routes-col{backdrop-filter:url(#lg-routes) blur(22px) saturate(175%)}
+  html.lg-refract .topbar{backdrop-filter:url(#lg-topbar) blur(18px) saturate(175%)}
+
+  /* specular: a soft light that follows the pointer across the glass */
+  .wallet-col,.routes-col,.topbar,.strip,dialog,.best-pick,.mobiletabs{--mx:30%;--my:-10%}
+  .wallet-col::after,.routes-col::after,.topbar::after,.strip::after,dialog::after,.best-pick::after{
+    content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+    background:radial-gradient(420px circle at var(--mx) var(--my),rgba(255,255,255,.085),rgba(255,255,255,.02) 40%,transparent 65%);
+    opacity:var(--spec,0);transition:opacity .5s ease;mix-blend-mode:screen}
+  .wallet-col:hover,.routes-col:hover,.topbar:hover,.strip:hover,dialog:hover,.best-pick:hover{--spec:1}
+  .wallet-col > *,.routes-col > *,.topbar > *,.strip > *{position:relative;z-index:1}
+  .best-pick{position:relative;overflow:hidden;flex:none}
+  .routes-col > .search-wrap,.routes-col > .filter-row,.routes-col > .list-count{flex:none}
+  .best-pick > *{position:relative;z-index:1}
+
+  /* sliding pill for segmented controls and the mobile tab bar */
+  .segmented{position:relative;isolation:isolate}
+  .mobiletabs{isolation:isolate}
+  .seg-thumb{position:absolute;top:3px;bottom:3px;left:3px;z-index:-1;border-radius:9px;pointer-events:none;
+    width:calc((100% - 6px) / var(--n,2));transform:translateX(calc(var(--i,0) * 100%));
+    background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.1));
+    box-shadow:0 1px 0 rgba(255,255,255,.28) inset,0 6px 16px -4px rgba(0,0,0,.45);
+    transition:transform .55s var(--spring),width .3s ease}
+  .mobiletabs .seg-thumb{top:4px;bottom:4px;left:4px;border-radius:999px;width:calc((100% - 8px) / var(--n,3))}
+  .segmented.has-thumb button[aria-checked="true"],.mobiletabs.has-thumb button[aria-pressed="true"]{background:none;box-shadow:none}
+  .segmented button,.mobiletabs button{position:relative;z-index:1}
+
+  /* ambient light: two slow glows that drift behind the glass */
+  .ambient{position:fixed;inset:-20%;z-index:1;pointer-events:none;mix-blend-mode:screen;opacity:.55}
+  .ambient i{position:absolute;width:44vmax;height:44vmax;border-radius:50%;filter:blur(90px)}
+  .ambient i:nth-child(1){left:-6%;top:10%;background:radial-gradient(circle,rgba(56,189,248,.16),transparent 65%);animation:drift1 26s ease-in-out infinite alternate}
+  .ambient i:nth-child(2){right:-8%;bottom:0;background:radial-gradient(circle,rgba(192,132,252,.13),transparent 65%);animation:drift2 32s ease-in-out infinite alternate}
+  @keyframes drift1{to{transform:translate(12vmax,8vmax) scale(1.15)}}
+  @keyframes drift2{to{transform:translate(-10vmax,-9vmax) scale(1.1)}}
+
+  /* view transitions: row -> detail morph, airport change cross-fade */
+  ::view-transition-old(route-card),::view-transition-new(route-card){animation-duration:.48s;animation-timing-function:cubic-bezier(.2,.9,.25,1)}
+  ::view-transition-group(route-card){animation-duration:.48s;animation-timing-function:cubic-bezier(.2,.9,.25,1)}
+  ::view-transition-old(root),::view-transition-new(root){animation-duration:.35s}
+  dialog.vt-open[open]{animation:none}
+
+  /* price updates tick instead of snapping */
+  .row-card .pts{transition:color .3s ease}
+  .row-card .pts.bump{animation:bump .5s var(--spring)}
+  @keyframes bump{40%{transform:scale(1.08);color:#fff}}
+
+  /* globe arrives with a gentle scale-in */
+  #globe-container canvas{animation:globe-in 1.1s var(--ease-out) both}
+  @keyframes globe-in{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+
+  @media (prefers-reduced-motion:reduce){
+    .ambient i,#globe-container canvas,.row-card .pts.bump{animation:none}
+    .seg-thumb{transition:none}
+  }
+
+  /* ---- plain-English search ---- */
+  .search-wrap{position:relative}
+  .search-hint{position:absolute;right:9px;top:50%;transform:translateY(-50%) scale(.9);opacity:0;pointer-events:none;
+    font-size:10px;font-weight:600;color:var(--text-2);padding:3px 7px;border-radius:7px;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.12);transition:opacity .25s ease,transform .4s var(--spring)}
+  .search-wrap.sentence .search-hint{opacity:1;transform:translateY(-50%) scale(1)}
+  .search-wrap.asking input{background-image:linear-gradient(90deg,rgba(56,189,248,0),rgba(56,189,248,.18),rgba(56,189,248,0));
+    background-size:200% 100%;animation:shimmer 1s linear infinite;border-color:rgba(125,211,252,.5)}
+  .search-wrap.asking .search-hint{opacity:0}
+  .nl-box{flex:none;margin:-2px 0 10px;padding:10px 11px;border-radius:14px;background:rgba(56,189,248,.07);border:1px solid rgba(125,211,252,.22);
+    animation:pop-in .45s var(--spring)}
+  .nl-box[hidden]{display:none}
+  .nl-head{display:flex;align-items:center;gap:8px}
+  .nl-q{flex:1;min-width:0;font-size:12px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nl-clear{flex:none;font:inherit;font-size:11px;font-weight:600;color:var(--accent-2);background:none;border:0;cursor:pointer;padding:2px 4px}
+  .nl-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+  .nl-chip{display:inline-flex;align-items:center;gap:5px;font:inherit;font-size:11px;font-weight:600;color:#E0F2FE;cursor:pointer;
+    padding:4px 6px 4px 9px;border-radius:999px;background:rgba(56,189,248,.18);border:1px solid rgba(125,211,252,.3);
+    transition:background .2s,transform .35s var(--spring)}
+  .nl-chip:hover{background:rgba(56,189,248,.28)}
+  .nl-chip:active{transform:scale(.94)}
+  .nl-chip .ico{width:11px;height:11px;opacity:.75}
+  .nl-none{font-size:11.5px;color:var(--text-3);margin:6px 0 0}
 </style>
 </head>
 <body>
+<!-- One icon set, one stroke weight, used everywhere (replaces emoji glyphs). -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-dash" viewBox="0 0 24 24"><path d="M7 12h10"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 3.5 2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11.2a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21z"/><circle cx="12" cy="9.8" r="2.3"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M9.8 9.6a2.3 2.3 0 1 1 3.2 2.1c-.6.3-1 .8-1 1.5v.5"/><path d="M12 16.6v.1"/></symbol>
+    <symbol id="i-ext" viewBox="0 0 24 24"><path d="M8 16 16 8M10 8h6v6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 4v4M12 16v4M4 12h4M16 12h4"/></symbol>
+  </defs>
+</svg>
 
 <!-- ══════════════════════════════════════════════════════════════════════
      ONBOARDING OVERLAY, sits above the app until it's dismissed.
@@ -1270,7 +1392,7 @@
     <div class="ob-globe" id="ob-globe-mount"></div>
     <div class="ob-planes" id="ob-planes"></div>
     <div class="ob-globe-fb"></div>
-    <div class="ob-globe-loading" id="ob-globe-loading"><b>Loading</b>Bringing the world up…</div>
+    <div class="ob-globe-loading" id="ob-globe-loading"><b>Loading</b>Loading the globe</div>
     <div class="ob-scrim"></div>
   </div>
 
@@ -1278,7 +1400,7 @@
     <span class="ob-mark" aria-hidden="true"></span>
     <span class="ob-wordmark">Milescope</span>
     <nav class="ob-crumbs" aria-label="Setup progress">
-      <b id="ob-crumb-1">Getting started</b><s aria-hidden="true">→</s><b id="ob-crumb-2">Your wallet</b>
+      <b id="ob-crumb-1">Getting started</b><s aria-hidden="true">/</s><b id="ob-crumb-2">Your wallet</b>
     </nav>
   </header>
 
@@ -1286,7 +1408,7 @@
     <section class="ob-hero">
       <div class="ob-wrap">
         <span class="ob-eyebrow"><i aria-hidden="true"></i>Current as of September 2026</span>
-        <h1 data-split>See where your points can take you the farthest.</h1>
+        <h1 data-split>Know exactly where your points can fly you.</h1>
         <p>Milescope checks every route out of your home airport against every program that can book it,
            then shows the cheapest way your cards can pay for it.</p>
         <div class="ob-cta">
@@ -1295,7 +1417,7 @@
               <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
           <button class="ob-btn ghost" type="button" data-demo>Explore a sample wallet</button>
-          <a class="ob-inline ob-cs-link" href="case-study.html">Read the product case study →</a>
+          <a class="ob-inline ob-cs-link" href="case-study.html">Read the product case study <svg class="ico sm"><use href="#i-arrow"/></svg></a>
         </div>
         <dl class="ob-proof">
           <div><dt class="ob-num" id="ob-proof-ap">72</dt><dd>airports</dd></div>
@@ -1444,9 +1566,9 @@
     <button type="button" id="nav-edu">Transfer partners</button>
     <a class="nav-cs" href="case-study.html">Case study</a>
   </nav>
-  <button class="home-pill" id="home-pill-btn" type="button">✈ <span id="home-pill-text">SEA · Seattle</span> ▾</button>
-  <button class="icon-btn" id="btn-settings" type="button" aria-label="Settings">⚙</button>
-  <button class="icon-btn" id="btn-help" type="button" aria-label="How this tool works">?</button>
+  <button class="home-pill" id="home-pill-btn" type="button" aria-label="Change home airport"><svg class="ico"><use href="#i-pin"/></svg><span id="home-pill-text">SEA · Seattle</span><svg class="ico sm"><use href="#i-chev"/></svg></button>
+  <button class="icon-btn" id="btn-settings" type="button" aria-label="Settings"><svg class="ico"><use href="#i-sliders"/></svg></button>
+  <button class="icon-btn" id="btn-help" type="button" aria-label="How this tool works"><svg class="ico"><use href="#i-help"/></svg></button>
   <span class="disclaimer">Estimates for planning only. Confirm terms before transferring</span>
 </header>
 
@@ -1524,9 +1646,11 @@
 
   <aside class="routes-col" aria-label="Route list">
     <div class="search-wrap">
-      <span class="ic" aria-hidden="true">⌕</span>
+      <svg class="ic ico" aria-hidden="true"><use href="#i-search"/></svg>
       <input type="search" id="search-input" placeholder="Search city, code, or country" autocomplete="off" aria-label="Search routes by city, code, or country">
+      <span class="search-hint" aria-hidden="true">Enter</span>
     </div>
+    <div class="nl-box" id="nl-chips" hidden></div>
     <div class="filter-row">
       <label class="sr-only" for="sel-region">Region</label>
       <select id="sel-region">
@@ -1559,7 +1683,7 @@
 
 <dialog id="dlg-home" class="home-dlg" aria-labelledby="dlg-home-title">
   <div class="dlg-head"><h2 id="dlg-home-title">Change home airport</h2>
-    <button class="btn ghost small" data-close="dlg-home" type="button">Close ✕</button>
+    <button class="btn ghost small" data-close="dlg-home" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body">
     <div class="field">
@@ -1572,11 +1696,11 @@
 
 <dialog id="dlg-route" aria-labelledby="dlg-route-title">
   <div class="dlg-head"><h2 id="dlg-route-title">Route</h2>
-    <button class="btn ghost small" data-close="dlg-route" type="button">Close ✕</button>
+    <button class="btn ghost small" data-close="dlg-route" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body" id="dlg-route-body"></div>
   <div class="dlg-foot">
-    <button class="btn" id="dlg-route-save-btn" type="button">☆ Save trip</button>
+    <button class="btn" id="dlg-route-save-btn" type="button"><svg class="ico"><use href="#i-star"/></svg><span>Save trip</span></button>
     <button class="btn" id="dlg-route-card-btn" type="button">Find the right card</button>
     <button class="btn primary" data-close="dlg-route" type="button">Done</button>
   </div>
@@ -1584,7 +1708,7 @@
 
 <dialog id="dlg-card" aria-labelledby="dlg-card-title">
   <div class="dlg-head"><h2 id="dlg-card-title">Find a card</h2>
-    <button class="btn ghost small" data-close="dlg-card" type="button">Close ✕</button>
+    <button class="btn ghost small" data-close="dlg-card" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body">
     <p id="dlg-card-context">Cards that fill the transferable currencies this tool uses most.</p>
@@ -1595,7 +1719,7 @@
 
 <dialog id="dlg-edu" aria-labelledby="dlg-edu-title">
   <div class="dlg-head"><h2 id="dlg-edu-title">Transfer partners, in short</h2>
-    <button class="btn ghost small" data-close="dlg-edu" type="button">Close ✕</button>
+    <button class="btn ghost small" data-close="dlg-edu" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body">
     <h3>What a "transfer partner" is</h3>
@@ -1603,16 +1727,16 @@
     <h3>Ratios aren't always 1:1</h3>
     <p>Most transfers are 1:1, but a few run richer or leaner during promotions. Check the live ratio in your card issuer's transfer portal before you move points. Transfers are one-way and usually irreversible.</p>
     <h3>What a "sweet spot" is</h3>
-    <p>Airlines price award charts by their own logic, not distance alone. A sweet spot is a route where a partner's chart quietly undercharges relative to what the flight is worth. ANA's chart via Virgin Atlantic Flying Club for travel to Japan is a classic example. This tool's badges point at the cheapest booking program for a route, not necessarily the operating airline.</p>
+    <p>Airlines price award charts by their own logic, not distance alone. A sweet spot is a route where a partner program charges far fewer miles than the flight is worth. ANA's chart via Virgin Atlantic Flying Club for travel to Japan is a classic example. This tool's badges point at the cheapest booking program for a route, not necessarily the operating airline.</p>
     <h3>Why not just redeem through the travel portal</h3>
-    <p>Card portals typically redeem points at a fixed 1–1.5¢ each. Transferring to an airline partner and booking a well-priced award can return several times that per point, often the difference between "just okay" and genuinely lucrative.</p>
+    <p>Card portals typically redeem points at a fixed 1–1.5¢ each. Transferring to an airline partner and booking a well-priced award can return several times that per point, often two to three times the value.</p>
   </div>
   <div class="dlg-foot"><button class="btn primary" data-close="dlg-edu" type="button">Got it</button></div>
 </dialog>
 
 <dialog id="dlg-deals" aria-labelledby="dlg-deals-title">
   <div class="dlg-head"><h2 id="dlg-deals-title">Latest transfer &amp; points deals</h2>
-    <button class="btn ghost small" data-close="dlg-deals" type="button">Close ✕</button>
+    <button class="btn ghost small" data-close="dlg-deals" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body" id="deals-body"><p style="color:var(--text-3)">Loading the latest posts…</p></div>
   <div class="dlg-foot"><span class="hint" style="margin-right:auto">Bonuses are built into every price you see.</span><button class="btn primary" data-close="dlg-deals" type="button">Close</button></div>
@@ -1620,7 +1744,7 @@
 
 <dialog id="dlg-help" aria-labelledby="dlg-help-title">
   <div class="dlg-head"><h2 id="dlg-help-title">How this works</h2>
-    <button class="btn ghost small" data-close="dlg-help" type="button">Close ✕</button>
+    <button class="btn ghost small" data-close="dlg-help" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body">
     <p>Set a home airport, then enter your point balances on the left. For every route, Milescope finds every frequent-flyer program that can book it, works out which of your cards transfers there (including any transfer bonus running right now), and ranks the options by how many of <em>your</em> points each one costs. If no single balance covers it, it checks whether pooling two does.</p>
@@ -1638,7 +1762,7 @@
 
 <dialog id="dlg-settings" aria-labelledby="dlg-settings-title">
   <div class="dlg-head"><h2 id="dlg-settings-title">Settings</h2>
-    <button class="btn ghost small" data-close="dlg-settings" type="button">Close ✕</button>
+    <button class="btn ghost small" data-close="dlg-settings" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body">
     <h3>Live availability (seats.aero)</h3>
@@ -1656,6 +1780,7 @@
   </div>
 </dialog>
 
+<div class="ambient" aria-hidden="true"><i></i><i></i></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <footer class="foot">Award prices are published-chart estimates ("~" = dynamically priced). Live seats come from seats.aero. Transfer partners and bonuses checked September 2026. Always confirm on the airline's site before transferring points; transfers can't be undone.</footer>
 
@@ -2171,6 +2296,7 @@ function routeCurrency(route, cabin){
   keys.sort(function(a,c){ return map[c]-map[a]; });
   return keys[0] || DIRECT_BALANCE[opt.program] || null;
 }
+function ic(name){ return '<svg class="ico" aria-hidden="true"><use href="#i-'+name+'"/></svg>'; }
 function curName(id){ return (PMAP[id] && PMAP[id].short) || id; }
 
 /* ===================== PRODUCT ANALYTICS =====================
@@ -2296,7 +2422,8 @@ function renderComboMatches(matches){
 }
 function chooseAirport(iata){
   if(!AP[iata]) return;
-  state.home = iata; renderHomePill(); syncUrl(); renderAll(); dlgHome.close();
+  dlgHome.close();
+  (window.MSFade || function(fn){ fn(); })(function(){ state.home = iata; renderHomePill(); syncUrl(); renderAll(); });
 }
 document.getElementById("home-pill-btn").addEventListener("click",function(){
   homeInput.value=""; renderComboMatches(AIRPORTS.slice(0,12));
@@ -2384,6 +2511,7 @@ function currentRoutes(){
   return all.filter(function(r){
     if(state.region!=="all" && r.region!==state.region) return false;
     if(state.nonstopOnly && !r.isNonstop) return false;
+    if(state.maxPts){ var b = planRoute(r, state.cabin).best; if(!b || b.need > state.maxPts) return false; }
     return true;
   });
 }
@@ -2391,6 +2519,7 @@ function sortRoutes(list){
   var l = list.slice();
   if(state.sort==="points") l.sort(function(a,b){ return a.pricing[state.cabin].minPoints-b.pricing[state.cabin].minPoints; });
   else if(state.sort==="value") l.sort(function(a,b){ return centsPerPoint(b,state.cabin)-centsPerPoint(a,state.cabin); });
+  else if(state.sort==="match") l.sort(function(a,b){ return (vibeScore(b)-vibeScore(a)) || (a.pricing[state.cabin].minPoints-b.pricing[state.cabin].minPoints); });
   else if(state.sort==="distance") l.sort(function(a,b){ return b.distanceMiles-a.distanceMiles; });
   else l.sort(function(a,b){ return a.dest.city.localeCompare(b.dest.city); });
   return l;
@@ -2406,7 +2535,7 @@ function renderAll(){
   document.getElementById("gauge-cap").textContent = !anyEnabled
     ? "Enable a program and check your balance."
     : (affCount===0 ? "No routes clear yet at "+state.cabin+" pricing from "+state.home+"."
-       : affCount===all.length ? "Every route from "+state.home+" is in reach. Nice wallet."
+       : affCount===all.length ? "Every route from "+state.home+" is bookable with your balances."
        : Math.round(affCount/all.length*100)+"% of routes from "+state.home+" are bookable right now.");
   document.getElementById("map-hint").textContent = !anyEnabled
     ? "Enter your points to see what you can afford"
@@ -2929,18 +3058,18 @@ function verdictHtml(plan){
   var prog = BOOK_SHORT[plan.opt.program];
   if(plan.status==="single"){
     var s = plan.steps[0];
-    return '<div class="verdict yes"><span class="vd-ic" aria-hidden="true">✓</span><div><b>You can book this.</b> '+
+    return '<div class="verdict yes"><span class="vd-ic" aria-hidden="true">'+ic("check")+'</span><div><b>You can book this.</b> '+
       (s.direct ? 'Straight from your '+curName(s.cur)+' balance.' : 'Transfer '+curName(s.cur)+' to '+prog+'.')+'</div></div>';
   }
   if(plan.status==="combo"){
-    return '<div class="verdict yes"><span class="vd-ic" aria-hidden="true">✓</span><div><b>You can book this</b> by pooling '+
+    return '<div class="verdict yes"><span class="vd-ic" aria-hidden="true">'+ic("check")+'</span><div><b>You can book this</b> by pooling '+
       plan.steps.length+' balances into '+prog+'.</div></div>';
   }
   if(!plan.reachable){
-    return '<div class="verdict no"><span class="vd-ic" aria-hidden="true">○</span><div><b>None of your cards reach this.</b> '+
+    return '<div class="verdict no"><span class="vd-ic" aria-hidden="true">'+ic("dash")+'</span><div><b>None of your cards reach this.</b> '+
       'Enable a currency that transfers to '+prog+', or see Find a card.</div></div>';
   }
-  return '<div class="verdict no"><span class="vd-ic" aria-hidden="true">○</span><div><b class="num">'+fmtPts(plan.shortBy)+
+  return '<div class="verdict no"><span class="vd-ic" aria-hidden="true">'+ic("dash")+'</span><div><b class="num">'+fmtPts(plan.shortBy)+
     ' miles short</b> of '+fmtPts(plan.need)+' in '+prog+'.</div></div>';
 }
 function optionRowHtml(plan, i){
@@ -2976,7 +3105,7 @@ function selectRoute(route, opts){
       '<div><div class="strip-title">'+route.dest.city+'</div>'+
       '<div class="strip-sub">'+route.originIata+' → '+route.destIata+' · '+fmtPts(route.distanceMiles)+' mi · '+
         (route.isNonstop?"nonstop":"connecting")+'</div></div>'+
-      '<button class="strip-x" id="strip-close" type="button" aria-label="Close">✕</button>'+
+      '<button class="strip-x" id="strip-close" type="button" aria-label="Close">'+ic("x")+'</button>'+
     '</div>'+
     '<div class="strip-carrier">'+route.operatingCarriers.join(" · ")+
       (live ? ' <span class="live-badge"><i class="ldot" aria-hidden="true"></i>Live</span>' : "")+'</div>'+
@@ -3036,7 +3165,7 @@ function fetchAvailability(originIata, destIata, cabin){
 }
 function renderAvailability(el, data, route){
   var items = (data && data.items) || [];
-  var link = '<a class="live-link" href="'+seatsSearchUrl(route.originIata,route.destIata)+'" target="_blank" rel="noopener">Open on seats.aero ↗</a>';
+  var link = '<a class="live-link" href="'+seatsSearchUrl(route.originIata,route.destIata)+'" target="_blank" rel="noopener">Open on seats.aero '+ic("ext")+'</a>';
   if(!items.length){
     el.innerHTML = '<p class="live-empty">No saver '+state.cabin+' space found in the next 60 days on the programs seats.aero tracks. '+link+'</p>';
     return;
@@ -3060,7 +3189,7 @@ function wireAvailability(btn, el, route){
     fetchAvailability(route.originIata, route.destIata, state.cabin)
       .then(function(data){ renderAvailability(el, data, route); btn.remove(); })
       .catch(function(err){
-        var link = '<a href="'+seatsSearchUrl(route.originIata,route.destIata)+'" target="_blank" rel="noopener">search seats.aero directly ↗</a>';
+        var link = '<a href="'+seatsSearchUrl(route.originIata,route.destIata)+'" target="_blank" rel="noopener">search seats.aero directly '+ic("ext")+'</a>';
         el.innerHTML = '<p class="live-empty">'+(err.code==="no_key"
           ? 'Live seats aren’t switched on for this site yet. Add a seats.aero key in Settings, or '+link+'.'
           : err.code==="not_deployed"
@@ -3213,7 +3342,7 @@ function renderBestPick(list){
     '<div class="bp-eyebrow">Best value you can book now</div>'+
     '<div class="bp-main"><div><b>'+best.r.dest.city+'</b><small>'+best.r.originIata+' → '+best.r.destIata+' · '+state.cabin+' · '+BOOK_SHORT[best.p.opt.program]+'</small></div>'+
     '<div class="bp-val"><span class="num">'+fmtCpp(best.c)+'</span><small>per point, est.</small></div></div>';
-  host.onclick = function(){ openRouteDetail(best.r); };
+  host.onclick = function(){ (window.MSVT || function(el,fn){ fn(); })(host, function(){ openRouteDetail(best.r); }); };
 }
 
 /* ===================== TOASTS + SHORTCUTS ===================== */
@@ -3235,11 +3364,131 @@ document.addEventListener("keydown", function(e){
   }
 });
 
+/* ===================== PLAIN-ENGLISH SEARCH (Jev via /api/search) =====================
+   Press Enter on a sentence ("warm beach in March, business, two of us,
+   under 120k") and Jev returns typed filters + trip-style preferences.
+   Everything after that is local: filters narrow the routes, preferences
+   rank them against the destination tags below, and each interpreted
+   piece shows as a chip the user can remove. Short queries ("tokyo",
+   "NRT") never leave the browser. */
+var DEST_TAGS = {
+  SEA:"city nature food", JFK:"city food culture nightlife", LAX:"warm beach city", ORD:"city food", DFW:"warm city",
+  ATL:"warm city", MIA:"warm beach city nightlife", BOS:"city culture food", SFO:"city food nature", DEN:"nature snow city",
+  IAH:"warm city food", PHX:"warm nature", LAS:"warm city nightlife", MSP:"city snow", PHL:"city culture food", EWR:"city",
+  IAD:"city culture", SLC:"nature snow", HNL:"warm beach nature", ANC:"nature snow", AUS:"warm city food nightlife",
+  SAN:"warm beach city", PDX:"city food nature", MCO:"warm beach", YYZ:"city food", YVR:"city nature snow",
+  LHR:"city culture food nightlife", CDG:"city culture food", AMS:"city culture nightlife", FRA:"city", MAD:"warm city culture food nightlife",
+  BCN:"warm beach city food nightlife", FCO:"warm city culture food", ZRH:"city nature snow", IST:"city culture food",
+  LIS:"warm beach city food", MUC:"city culture snow", DUB:"city culture nightlife", CPH:"city food culture", VIE:"city culture",
+  KEF:"nature snow", HND:"city food culture nightlife", NRT:"city food culture", ICN:"city food nightlife", SIN:"warm city food",
+  HKG:"city food nightlife", BKK:"warm beach food culture nightlife", TPE:"city food nature", PVG:"city food", PEK:"city culture",
+  DEL:"culture food", MNL:"warm beach", SGN:"warm food culture", DXB:"warm beach city", DOH:"warm city", AUH:"warm beach",
+  SYD:"warm beach city", AKL:"nature city", MEL:"city food culture", MEX:"city food culture", CUN:"warm beach",
+  BOG:"city culture nature", LIM:"city food culture", SCL:"city nature snow", EZE:"city food culture nightlife", GRU:"city food",
+  PTY:"warm beach city", JNB:"city nature", CAI:"warm culture", NBO:"nature culture", CMN:"warm culture beach"
+};
+var VIBE_LABEL = {warm:"Warm", beach:"Beach", city:"Big city", food:"Food", culture:"Culture", nature:"Outdoors", snow:"Snow", nightlife:"Nightlife"};
+var REGION_NAME = {domestic:"North America", europe:"Europe", asia:"Asia", middle_east:"Middle East", latam:"Latin America", oceania:"Oceania", africa:"Africa"};
+state.nl = null;       // {query, vibes}
+state.maxPts = null;
+
+function vibeScore(r){
+  if(!state.nl || !state.nl.vibes) return 0;
+  var tags = (DEST_TAGS[r.destIata]||"").split(" "), s = 0;
+  Object.keys(state.nl.vibes).forEach(function(v){ if(tags.indexOf(v)>-1) s += state.nl.vibes[v]; });
+  return s;
+}
+function looksLikeSentence(q){
+  return q.trim().split(/\s+/).length >= 3 || /\d\s?k\b|under|budget|business|economy|warm|beach/i.test(q);
+}
+function setSelect(id, v){ var el = document.getElementById(id); if(el) el.value = v; }
+function applyNL(data){
+  var f = data.filters || {};
+  if(f.region){ state.region = f.region; setSelect("sel-region", f.region); }
+  if(f.cabin){ state.cabin = f.cabin;
+    Array.prototype.forEach.call(document.querySelectorAll("#cabin-toggle button"), function(b){ b.setAttribute("aria-checked", b.getAttribute("data-cabin")===f.cabin?"true":"false"); }); }
+  if(f.trip){ state.trip = f.trip; }
+  if(f.pax){ state.pax = Math.min(6, Math.max(1, f.pax)); }
+  if(f.nonstop){ state.nonstopOnly = true; document.getElementById("chip-nonstop").setAttribute("aria-pressed","true"); }
+  state.maxPts = f.maxPts || null;
+  state.nl = {query:data.query, vibes:data.vibes||{}, filters:f};
+  if(Object.keys(state.nl.vibes).length){ state.sort = "match"; setSelect("sel-sort","match"); }
+  state.query = ""; document.getElementById("search-input").value = "";
+  document.querySelector(".search-wrap").classList.remove("sentence");
+  syncTripUI(); syncUrl();
+  (window.MSFade || function(fn){ fn(); })(function(){ renderAll(); renderNLChips(); });
+  track("nl_search", {filters:Object.keys(f).filter(function(k){ return f[k]; }).length, vibes:Object.keys(state.nl.vibes).length});
+}
+function renderNLChips(){
+  var host = document.getElementById("nl-chips"); if(!host) return;
+  if(!state.nl){ host.hidden = true; host.innerHTML = ""; return; }
+  var f = state.nl.filters, chips = [];
+  if(f.region && state.region===f.region) chips.push(["region", REGION_NAME[f.region]]);
+  if(f.cabin && state.cabin===f.cabin) chips.push(["cabin", f.cabin==="business"?"Business":"Economy"]);
+  if(f.trip && state.trip===f.trip) chips.push(["trip", f.trip==="rt"?"Round trip":"One-way"]);
+  if(f.pax && state.pax===f.pax) chips.push(["pax", f.pax+(f.pax===1?" traveler":" travelers")]);
+  if(state.nonstopOnly && f.nonstop) chips.push(["nonstop", "Nonstop"]);
+  if(state.maxPts) chips.push(["maxPts", "Under "+fmtK(state.maxPts)]);
+  Object.keys(state.nl.vibes).forEach(function(v){ chips.push(["vibe:"+v, VIBE_LABEL[v]]); });
+  host.hidden = false;
+  host.innerHTML = '<div class="nl-head"><span class="nl-q">“'+escapeHtml(state.nl.query)+'”</span><button type="button" class="nl-clear" data-nl="all">Clear</button></div>'+
+    (chips.length ? '<div class="nl-chips">'+chips.map(function(c){
+      return '<button type="button" class="nl-chip" data-nl="'+c[0]+'" aria-label="Remove '+escapeHtml(c[1])+'">'+escapeHtml(c[1])+ic("x")+'</button>';
+    }).join("")+'</div>' : '<p class="nl-none">Couldn’t pick out any filters from that. Try naming a region, cabin or budget.</p>');
+  Array.prototype.forEach.call(host.querySelectorAll("[data-nl]"), function(b){
+    b.addEventListener("click", function(){ removeNL(b.getAttribute("data-nl")); });
+  });
+}
+function removeNL(k){
+  if(k==="all"){
+    if(state.nl && state.nl.filters.region){ state.region = "all"; setSelect("sel-region","all"); }
+    if(state.nl && state.nl.filters.nonstop){ state.nonstopOnly = false; document.getElementById("chip-nonstop").setAttribute("aria-pressed","false"); }
+    state.maxPts = null; state.nl = null;
+    if(state.sort==="match"){ state.sort = "points"; setSelect("sel-sort","points"); }
+  }else if(k==="region"){ state.region = "all"; setSelect("sel-region","all"); }
+  else if(k==="nonstop"){ state.nonstopOnly = false; document.getElementById("chip-nonstop").setAttribute("aria-pressed","false"); }
+  else if(k==="maxPts"){ state.maxPts = null; }
+  else if(k==="pax"){ state.pax = 1; syncTripUI(); }
+  else if(k==="trip"){ state.trip = "ow"; syncTripUI(); }
+  else if(k==="cabin"){ /* cabin always has a value; the chip just stops claiming it */ state.nl.filters.cabin = null; }
+  else if(k.indexOf("vibe:")===0){ delete state.nl.vibes[k.slice(5)];
+    if(!Object.keys(state.nl.vibes).length && state.sort==="match"){ state.sort = "points"; setSelect("sel-sort","points"); } }
+  syncUrl(); renderAll(); renderNLChips();
+}
+function askJev(q){
+  var wrap = document.querySelector(".search-wrap");
+  wrap.classList.add("asking");
+  fetch("/api/search?q="+encodeURIComponent(q)).then(function(r){
+    return r.json().catch(function(){ return {}; }).then(function(b){ if(!r.ok){ var e = new Error(b.error||r.status); e.code = b.error || (r.status===404?"not_deployed":"error"); throw e; } return b; });
+  }).then(applyNL).catch(function(err){
+    toast(err.code==="no_key" || err.code==="not_deployed"
+      ? "Describe-a-trip search isn’t switched on for this site yet. Searching by name instead."
+      : "Couldn’t read that just now. Searching by name instead.");
+  }).then(function(){ wrap.classList.remove("asking"); });
+}
+(function(){
+  var input = document.getElementById("search-input");
+  input.setAttribute("placeholder", "City, code, or describe a trip…");
+  input.setAttribute("aria-label", "Search routes by city or code, or describe a trip and press Enter");
+  input.addEventListener("keydown", function(e){
+    if(e.key!=="Enter") return;
+    var q = input.value.trim();
+    if(q && looksLikeSentence(q)){ e.preventDefault(); askJev(q); }
+  });
+  input.addEventListener("input", function(){
+    document.querySelector(".search-wrap").classList.toggle("sentence", looksLikeSentence(input.value));
+  });
+  var sort = document.getElementById("sel-sort");
+  if(sort && !sort.querySelector('option[value="match"]')){
+    var o = document.createElement("option"); o.value = "match"; o.textContent = "Best match"; sort.insertBefore(o, sort.firstChild);
+  }
+})();
+
 /* ===================== ROUTE LIST ===================== */
 
 var rowsEl = document.getElementById("rows"), listCountEl = document.getElementById("list-count");
 var loadMoreWrap = document.getElementById("load-more-wrap"), loadMoreBtn = document.getElementById("btn-load-more");
-var lastListSig = "";
+var lastListSig = "", lastPts = {};
 
 function renderList(){
   var all = sortRoutes(currentRoutes());
@@ -3263,9 +3512,13 @@ function renderList(){
   loadMoreWrap.hidden = shown.length>=visible.length;
 
   Array.prototype.forEach.call(rowsEl.querySelectorAll(".row-card"),function(row){
+    var dest = row.getAttribute("data-dest"), ptsEl = row.querySelector(".pts");
+    /* a price that changed since the last render ticks, so balance edits read as cause → effect */
+    if(ptsEl && lastPts[dest]!==undefined && lastPts[dest]!==ptsEl.textContent && !rowsEl.classList.contains("enter")) ptsEl.classList.add("bump");
+    if(ptsEl) lastPts[dest] = ptsEl.textContent;
     row.addEventListener("click",function(){
-      var r = all.find(function(x){return x.destIata===row.getAttribute("data-dest");});
-      openRouteDetail(r);
+      var r = all.find(function(x){return x.destIata===dest;});
+      (window.MSVT || function(el,fn){ fn(); })(row, function(){ openRouteDetail(r); });
     });
   });
   if(!visible.length){
@@ -3280,7 +3533,7 @@ function rowHtml(r, i){
   var otherCabin = state.cabin==="economy" ? "business" : "economy";
   var other = r.pricing[otherCabin].minPoints * tripMultiplier();
   return '<button type="button" class="row-card'+(ok?" ok":"")+'" data-dest="'+r.destIata+'" style="--i:'+Math.min(i,14)+'">'+
-    '<div class="left"><div class="city">'+r.dest.city+(isSaved(r,state.cabin)?'<span class="saved-dot" title="On your trip board">★</span>':'')+(r.sweet?'<span class="sweet-dot" title="Sweet spot" aria-label="Sweet spot">★</span>':"")+'</div>'+
+    '<div class="left"><div class="city">'+r.dest.city+(isSaved(r,state.cabin)?'<span class="saved-dot" title="On your trip board">'+ic("star")+'</span>':'')+(r.sweet?'<span class="sweet-tag sm" title="A route where a partner program prices unusually low">Sweet spot</span>':"")+'</div>'+
     '<div class="codes-line"><span class="o">'+r.originIata+'</span> → <span class="d">'+r.destIata+'</span> '+r.dest.country+
       (r.isNonstop?' <span class="ns">nonstop</span>':' <span class="stop">connecting</span>')+'</div>'+
     '<div class="badges">'+r.operatingCarriers.slice(0,3).map(function(c){return '<span class="badge">'+c+'</span>';}).join("")+'</div></div>'+
@@ -3338,7 +3591,7 @@ function openRouteDetail(route){
 }
 function syncSaveBtn(route){
   var b = document.getElementById("dlg-route-save-btn"), on = isSaved(route, state.cabin);
-  b.textContent = on ? "★ Saved" : "☆ Save trip"; b.setAttribute("aria-pressed", String(on));
+  b.querySelector("span").textContent = on ? "Saved" : "Save trip"; b.setAttribute("aria-pressed", String(on));
 }
 document.getElementById("dlg-route-save-btn").addEventListener("click",function(){
   if(!state.selectedRoute) return; toggleTrip(state.selectedRoute, state.cabin); syncSaveBtn(state.selectedRoute);
@@ -3410,7 +3663,7 @@ function openCardDialog(route){
     });
   }
   ctx.textContent = route
-    ? "Cards whose points reach "+route.originIata+" → "+route.destIata+" in "+state.cabin+", with the cheapest program each unlocks:"
+    ? "Cards whose points reach "+route.originIata+" → "+route.destIata+" in "+state.cabin+", and the cheapest program each one reaches:"
     : "The five transferable currencies this tool prices, and where each one goes.";
   var list = document.getElementById("card-list");
   var cards = CARDS.slice();
@@ -3885,7 +4138,7 @@ function renderGrid(){
       'data-card="'+c.id+'" aria-pressed="false" aria-label="'+c.name+', earns '+(prog?prog.name:"points")+'">'+
       '<span class="pick-lift"><span class="pick-tilt">'+cardFace(c)+
         '<span class="pick-ring" aria-hidden="true"></span>'+
-        '<span class="pick-check" aria-hidden="true">✓</span></span></span>'+
+        '<span class="pick-check" aria-hidden="true">'+ic("check")+'</span></span></span>'+
       '<span class="pick-prog"><i aria-hidden="true"></i>Fills '+(prog?prog.short:"points")+'</span></button>';
   }).join("");
   wireArt(gridEl);
@@ -4124,6 +4377,152 @@ function initOnboarding(){
 initOnboarding();
 })();
 
+})();
+</script>
+<script>
+/* ══════════════════════════════════════════════════════════════════════
+   LIQUID GLASS ENGINE
+   1. Refraction: for each big pane, draw a displacement map the size of
+      the pane: neutral in the middle, bending inward along a rounded
+      bezel, the way thick glass bends light at its edge. It becomes an
+      SVG filter used inside backdrop-filter (Chromium only; elsewhere
+      the panes stay frosted).
+   2. Specular light that follows the pointer.
+   3. Sliding thumbs for segmented controls.
+   4. View-transition morphs (row -> detail, airport change).
+   ══════════════════════════════════════════════════════════════════════ */
+(function(){
+"use strict";
+var reduced = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+var isChromium = !!(navigator.userAgentData && navigator.userAgentData.brands &&
+  navigator.userAgentData.brands.some(function(b){ return /Chromium|Google Chrome|Microsoft Edge/.test(b.brand); }));
+var canRefract = isChromium && window.CSS && CSS.supports("backdrop-filter","url(#x) blur(2px)");
+
+/* ---------- 1. refraction ---------- */
+var SVGNS = "http://www.w3.org/2000/svg";
+var defs = null;
+function ensureDefs(){
+  if(defs) return defs;
+  var svg = document.createElementNS(SVGNS,"svg");
+  svg.setAttribute("width","0"); svg.setAttribute("height","0");
+  svg.setAttribute("aria-hidden","true");
+  svg.style.cssText = "position:absolute;width:0;height:0;overflow:hidden";
+  defs = document.createElementNS(SVGNS,"defs"); svg.appendChild(defs);
+  document.body.appendChild(svg);
+  return defs;
+}
+function lensMap(w, h, r, bezel){
+  var S = 0.5, cw = Math.max(2, Math.round(w*S)), ch = Math.max(2, Math.round(h*S));
+  var c = document.createElement("canvas"); c.width = cw; c.height = ch;
+  var ctx = c.getContext("2d"), img = ctx.createImageData(cw, ch), d = img.data;
+  var hw = w/2, hh = h/2, i = 0;
+  for(var py=0; py<ch; py++){
+    for(var px=0; px<cw; px++, i+=4){
+      var x = (px+.5)/S - hw, y = (py+.5)/S - hh;
+      var qx = Math.abs(x) - (hw - r), qy = Math.abs(y) - (hh - r);
+      var ox = Math.max(qx,0), oy = Math.max(qy,0);
+      var sd = Math.sqrt(ox*ox+oy*oy) + Math.min(Math.max(qx,qy),0) - r;   // <0 inside
+      var depth = -sd, nx = 0, ny = 0;
+      if(qx>0 && qy>0){ var l = Math.sqrt(qx*qx+qy*qy)||1; nx = qx/l*Math.sign(x); ny = qy/l*Math.sign(y); }
+      else if(qx>qy){ nx = Math.sign(x); } else { ny = Math.sign(y); }
+      var t = Math.min(Math.max(depth/bezel,0),1), m = (1-t)*(1-t);   // strongest at the rim
+      d[i]   = 128 - nx*m*127;
+      d[i+1] = 128 - ny*m*127;
+      d[i+2] = 128; d[i+3] = 255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+  return c.toDataURL();
+}
+function buildFilter(id, el, radius, bezel, strength){
+  var w = Math.round(el.offsetWidth), h = Math.round(el.offsetHeight);
+  if(w < 40 || h < 30) return;
+  var old = document.getElementById(id); if(old) old.remove();
+  var f = document.createElementNS(SVGNS,"filter");
+  f.setAttribute("id",id); f.setAttribute("filterUnits","userSpaceOnUse");
+  f.setAttribute("x","0"); f.setAttribute("y","0"); f.setAttribute("width",w); f.setAttribute("height",h);
+  f.setAttribute("color-interpolation-filters","sRGB");
+  var im = document.createElementNS(SVGNS,"feImage");
+  im.setAttribute("href", lensMap(w,h,radius,bezel)); im.setAttribute("x","0"); im.setAttribute("y","0");
+  im.setAttribute("width",w); im.setAttribute("height",h); im.setAttribute("preserveAspectRatio","none"); im.setAttribute("result","map");
+  var dm = document.createElementNS(SVGNS,"feDisplacementMap");
+  dm.setAttribute("in","SourceGraphic"); dm.setAttribute("in2","map"); dm.setAttribute("scale",strength);
+  dm.setAttribute("xChannelSelector","R"); dm.setAttribute("yChannelSelector","G");
+  f.appendChild(im); f.appendChild(dm);
+  ensureDefs().appendChild(f);
+}
+var PANES = [
+  {id:"lg-wallet", sel:".wallet-col", r:22, bezel:26, k:46},
+  {id:"lg-routes", sel:".routes-col", r:22, bezel:26, k:46},
+  {id:"lg-topbar", sel:".topbar",     r:18, bezel:14, k:26}
+];
+if(canRefract){
+  document.documentElement.classList.add("lg-refract");
+  var timers = {};
+  PANES.forEach(function(p){
+    var el = document.querySelector(p.sel); if(!el) return;
+    var run = function(){ buildFilter(p.id, el, p.r, p.bezel, p.k); };
+    run();
+    if(window.ResizeObserver) new ResizeObserver(function(){
+      clearTimeout(timers[p.id]); timers[p.id] = setTimeout(run, 150);
+    }).observe(el);
+  });
+}
+
+/* ---------- 2. specular pointer light ---------- */
+var SPEC = ".wallet-col,.routes-col,.topbar,.strip,dialog[open],.best-pick";
+var pending = null, queued = false;
+document.addEventListener("pointermove", function(e){
+  if(reduced || e.pointerType==="touch") return;
+  pending = e;
+  if(queued) return;
+  queued = true;
+  requestAnimationFrame(function(){
+    queued = false;
+    var ev = pending; pending = null; if(!ev) return;
+    var el = ev.target && ev.target.closest && ev.target.closest(SPEC);
+    if(!el) return;
+    var b = el.getBoundingClientRect();
+    el.style.setProperty("--mx", (ev.clientX-b.left)+"px");
+    el.style.setProperty("--my", (ev.clientY-b.top)+"px");
+  });
+}, {passive:true});
+
+/* ---------- 3. sliding thumbs ---------- */
+function mountThumb(host, attr){
+  if(!host || host.querySelector(".seg-thumb")) return;
+  var btns = host.querySelectorAll("button"), thumb = document.createElement("span");
+  thumb.className = "seg-thumb"; thumb.setAttribute("aria-hidden","true");
+  host.insertBefore(thumb, host.firstChild); host.classList.add("has-thumb");
+  host.style.setProperty("--n", btns.length);
+  var sync = function(){
+    var i = 0; Array.prototype.forEach.call(btns, function(b,j){ if(b.getAttribute(attr)==="true") i = j; });
+    host.style.setProperty("--i", i);
+  };
+  sync();
+  new MutationObserver(sync).observe(host, {attributes:true, subtree:true, attributeFilter:[attr]});
+}
+mountThumb(document.getElementById("cabin-toggle"), "aria-checked");
+mountThumb(document.getElementById("trip-toggle"), "aria-checked");
+mountThumb(document.querySelector(".mobiletabs"), "aria-pressed");
+
+/* ---------- 4. view transitions ---------- */
+window.MSVT = function(el, update){
+  if(reduced || !document.startViewTransition || !el){ update(); return; }
+  var dlg = document.getElementById("dlg-route");
+  el.style.viewTransitionName = "route-card";
+  var t = document.startViewTransition(function(){
+    el.style.viewTransitionName = "";
+    dlg.style.viewTransitionName = "route-card";
+    dlg.classList.add("vt-open");
+    update();
+  });
+  t.finished.finally(function(){ dlg.style.viewTransitionName = ""; dlg.classList.remove("vt-open"); });
+};
+window.MSFade = function(update){
+  if(reduced || !document.startViewTransition){ update(); return; }
+  document.startViewTransition(update);
+};
 })();
 </script>
 <!-- Vercel Web Analytics: page views + the custom funnel events in track().
