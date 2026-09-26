@@ -210,7 +210,7 @@ function decide(post, a, dates) {
 }
 
 export async function GET() {
-  const key = process.env.TYPESAFE_API_KEY || "";
+  const key = process.env.JEV_KEY || process.env.jev_key || process.env.TYPESAFE_API_KEY || "";
   if (!key) return json({ error: "no_key" }, 501, { "cache-control": "no-store" });
 
   const cutoff = Date.now() - MAX_AGE_DAYS * 86400000;

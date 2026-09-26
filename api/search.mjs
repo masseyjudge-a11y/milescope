@@ -72,7 +72,7 @@ function questions(budgets) {
 }
 
 export async function GET(request) {
-  const key = process.env.TYPESAFE_API_KEY || "";
+  const key = process.env.JEV_KEY || process.env.jev_key || process.env.TYPESAFE_API_KEY || "";
   const url = new URL(request.url);
   const query = (url.searchParams.get("q") || "").trim().slice(0, 300);
   if (!key) return json({ error: "no_key" }, 501, { "cache-control": "no-store" });
