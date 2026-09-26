@@ -15,7 +15,7 @@
 
 <!-- Composes the opening frame instead of flashing the finished page.
      Blocking on purpose, and it opts straight out under reduced motion. -->
-<script>(function(){try{if(!window.matchMedia||!matchMedia('(prefers-reduced-motion: reduce)').matches){document.documentElement.classList.add('anim');}}catch(e){}})();</script>
+<script>(function(){try{if(!window.matchMedia||!matchMedia('(prefers-reduced-motion: reduce)').matches||/[#&?]motion/.test(location.href)){document.documentElement.classList.add('anim');}}catch(e){}})();</script>
 <style>
   :root{
     --bg:#02040A;
@@ -1430,6 +1430,14 @@
   .brand .mark{box-shadow:none !important;background:url("logo.svg") center/cover no-repeat !important;border-radius:3px !important}
   .ob-mark{background:url("logo.svg") center/cover no-repeat !important;box-shadow:none !important;border-radius:calc(4 * var(--u)) !important}
   .ob-mark::before,.ob-mark::after{display:none !important}
+
+  /* ---- opening zoom ---- */
+  #onboarding.zoom-intro .ob-globe{transition:none !important;
+    transform:translate(var(--zx,0px),var(--zy,0px)) scale(var(--zs,1.6)) !important}
+  #onboarding.zoom-out .ob-globe{transition:transform 2.6s cubic-bezier(.6,0,.15,1) !important}
+  #onboarding.zoom-intro .ob-scrim{opacity:0}
+  #onboarding.zoom-intro .ob-top{opacity:0}
+  #onboarding .ob-scrim{transition:opacity 1.6s ease .5s,background .8s var(--e-expo),backdrop-filter .8s ease}
 </style>
 </head>
 <body>
@@ -4461,8 +4469,32 @@ function initOnboarding(){
       setTimeout(function(){ html.classList.remove("anim","play"); }, 2400);
     });});
   }
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(play); setTimeout(play, 500); }
-  else play();
+  /* Opening shot: the planet starts close and centered, then pulls back into
+     place while the camera eases out; the headline follows. Once per visit,
+     and only when motion is allowed (the "anim" class). */
+  var zoom = !!window.__msHero;
+  try{ zoom = zoom && !sessionStorage.getItem("ms_intro_zoom"); sessionStorage.setItem("ms_intro_zoom","1"); }catch(e){}
+  if(zoom) zoomIntro();
+  function kick(){ zoom ? setTimeout(play, 1700) : play(); }
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(kick); setTimeout(kick, 500); }
+  else kick();
+}
+function zoomIntro(){
+  var g = root.querySelector(".ob-globe"), hero = window.__msHero;
+  if(!g || !hero) return;
+  var r = g.getBoundingClientRect();
+  var dx = innerWidth/2 - (r.left + r.width/2), dy = innerHeight/2 - (r.top + r.height/2);
+  var zs = Math.max(1.35, Math.max(innerWidth, innerHeight) * 1.08 / r.width);
+  root.style.setProperty("--zx", dx+"px"); root.style.setProperty("--zy", dy+"px"); root.style.setProperty("--zs", zs);
+  root.classList.add("zoom-intro");
+  var c = hero.controls(); c.autoRotate = false;
+  hero.pointOfView({lat:34, lng:-70, altitude:0.95}, 0);
+  void g.offsetWidth;
+  setTimeout(function(){
+    root.classList.add("zoom-out"); root.classList.remove("zoom-intro");
+    hero.pointOfView({lat:22, lng:-40, altitude:2.35}, 2600);
+    setTimeout(function(){ root.classList.remove("zoom-out"); c.autoRotate = true; }, 2700);
+  }, 450);
 }
 
 initOnboarding();
@@ -4616,12 +4648,14 @@ function attachGlobeGlass(g, host, id){
     var d = cam.position.length(), R = (g.getGlobeRadius ? g.getGlobeRadius() : 100);
     if(d <= R) return;
     var cr = canvas.getBoundingClientRect(), hr = host.getBoundingClientRect();
-    if(!cr.height) return;
-    var r = (cr.height/2) * (R/Math.sqrt(d*d-R*R)) / Math.tan(cam.fov*Math.PI/360);
+    var ch = canvas.clientHeight, cw = canvas.clientWidth;
+    if(!ch || !hr.width) return;
+    var k = hr.width / (host.offsetWidth || hr.width);          // CSS scale on the host, if any
+    var r = (ch/2) * (R/Math.sqrt(d*d-R*R)) / Math.tan(cam.fov*Math.PI/360);
     var D = Math.round(r*2);
     el.style.width = el.style.height = D+"px";
-    el.style.left = Math.round(cr.left - hr.left + cr.width/2 - D/2)+"px";
-    el.style.top  = Math.round(cr.top  - hr.top  + cr.height/2 - D/2)+"px";
+    el.style.left = Math.round((cr.left - hr.left)/k + cw/2 - D/2)+"px";
+    el.style.top  = Math.round((cr.top  - hr.top)/k  + ch/2 - D/2)+"px";
     if(canRefract && Math.abs(D-lastD) > Math.max(6, lastD*0.03)){
       clearTimeout(rebuildT);
       rebuildT = setTimeout(function(){ lastD = D; buildFilter(id, el, D/2, D*0.14, Math.min(70, D*0.09)); }, 120);
