@@ -1356,6 +1356,20 @@
   .nl-chip:active{transform:scale(.94)}
   .nl-chip .ico{width:11px;height:11px;opacity:.75}
   .nl-none{font-size:11.5px;color:var(--text-3);margin:6px 0 0}
+
+  /* ---- glass globe ---- */
+  .globe-glass{position:absolute;z-index:2;border-radius:50%;pointer-events:none;
+    background:
+      radial-gradient(circle at 31% 24%,rgba(255,255,255,.30),rgba(255,255,255,.10) 9%,rgba(255,255,255,0) 24%),
+      radial-gradient(circle at 70% 88%,rgba(125,211,252,.16),rgba(125,211,252,0) 34%),
+      radial-gradient(closest-side,rgba(255,255,255,0) 84%,rgba(190,225,255,.10) 93%,rgba(210,235,255,.34) 99%,rgba(255,255,255,0) 100%);
+    box-shadow:inset 0 -26px 60px -10px rgba(2,4,10,.55),inset 0 14px 40px -12px rgba(255,255,255,.14),
+      0 0 0 1px rgba(255,255,255,.06),0 0 90px -10px rgba(56,189,248,.22);
+    transition:width .25s linear,height .25s linear,left .25s linear,top .25s linear}
+  .globe-glass::after{content:"";position:absolute;left:18%;top:9%;width:30%;height:14%;border-radius:50%;
+    background:radial-gradient(closest-side,rgba(255,255,255,.22),rgba(255,255,255,0));transform:rotate(-24deg);filter:blur(2px)}
+  .ob-globe .globe-glass{z-index:1}
+  @media (prefers-reduced-motion:reduce){ .globe-glass{transition:none} }
 </style>
 </head>
 <body>
@@ -1409,8 +1423,7 @@
       <div class="ob-wrap">
         <span class="ob-eyebrow"><i aria-hidden="true"></i>Current as of September 2026</span>
         <h1 data-split>Know exactly where your points can fly you.</h1>
-        <p>Milescope checks every route out of your home airport against every program that can book it,
-           then shows the cheapest way your cards can pay for it.</p>
+        <p>Add your cards and points. See every flight you can book, and the cheapest way to pay.</p>
         <div class="ob-cta">
           <button class="ob-btn" type="button" data-go="setup">Plan with my cards
             <svg class="ob-arw" viewBox="0 0 16 16" fill="none" aria-hidden="true">
@@ -1436,35 +1449,27 @@
       <div class="ob-panel-head">
         <h2 id="ob-gs-title" tabindex="-1">Getting started</h2>
         <div class="sub">See where your credit card points can take you</div>
-        <p class="lead">The map shows everywhere you can fly from your home airport on points. Routes in
-          bright blue are ones your balances already cover; dim ones need more points.</p>
+        <p class="lead">Bright routes on the map are trips you can book with the points you have.</p>
       </div>
       <div class="ob-panel-body">
         <div class="ob-acc" data-open="false">
           <button class="ob-acc-btn" type="button">What are transferable points?
             <svg class="chev" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 5.5 7 9.5l4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <div class="ob-acc-panel"><div class="ob-acc-inner"><p>Chase, Amex, Capital One, Bilt and Citi don't fly
-            planes. They let you move points into an airline's own frequent-flyer program, usually at 1:1.
-            Once moved, the points behave like any other mileage balance, with that airline's rules.</p></div></div>
+          <div class="ob-acc-panel"><div class="ob-acc-inner"><p>Points from cards like Chase and Amex that you can move into airline programs, usually one to one.</p></div></div>
         </div>
         <div class="ob-acc" data-open="false">
           <button class="ob-acc-btn" type="button">What can I do with them?
             <svg class="chev" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 5.5 7 9.5l4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <div class="ob-acc-panel"><div class="ob-acc-inner"><p>Book award seats on that airline or its partners.
-            Card portals redeem points at a fixed 1–1.5¢ each; transferring to an airline and booking a
-            well-priced award often returns several times that per point.</p></div></div>
+          <div class="ob-acc-panel"><div class="ob-acc-inner"><p>Book flights. Moving points to an airline is usually worth much more than using the card's travel portal.</p></div></div>
         </div>
         <div class="ob-acc" data-open="false">
           <button class="ob-acc-btn" type="button">How do I get more points?
             <svg class="chev" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M3 5.5 7 9.5l4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-          <div class="ob-acc-panel"><div class="ob-acc-inner"><p>Welcome bonuses, bonus-category spend, and
-            transfer promotions that temporarily pay more than 1:1. The Latest deals panel inside the map
-            tracks those as they're announced.</p></div></div>
+          <div class="ob-acc-panel"><div class="ob-acc-inner"><p>Card sign-up bonuses, everyday spending, and transfer bonuses. Latest deals shows the current ones.</p></div></div>
         </div>
         <div class="ob-callout">
           <h3>Optional: live award availability</h3>
-          <p>Prices start from published award charts. Add a seats.aero Pro key and each route can also
-            check real bookable seats for the next 60 days.</p>
+          <p>Have a seats.aero Pro account? Add your key to see real seats.</p>
           <div class="row">
             <a class="ob-btn ghost sm" href="https://seats.aero" target="_blank" rel="noopener">Get seats.aero Pro</a>
             <button class="ob-btn ghost sm" type="button" data-open-settings>I already have a key</button>
@@ -1503,14 +1508,12 @@
       </div>
       <div class="ob-block">
         <div class="ob-block-head"><u>02</u><h2>Which cards are in your wallet?</h2></div>
-        <p>Each one switches on the points currency it earns. Pick as many as you carry. You can change
-           this any time from the wallet panel.</p>
+        <p>Pick every card you have.</p>
         <div class="ob-grid" id="ob-grid"></div>
       </div>
       <div class="ob-block ob-bal-block" id="ob-bal-block" hidden>
         <div class="ob-block-head"><u>03</u><h2>Roughly how many points?</h2></div>
-        <p>Ballpark is fine. Tap a preset or type a number. This is what turns “possible” into “you can book
-           this.” It stays in this browser.</p>
+        <p>A rough number is fine.</p>
         <div class="ob-bals" id="ob-bals"></div>
       </div>
     </div>
@@ -1637,7 +1640,7 @@
     <div class="globe-stage">
       <div id="globe-container" role="application" aria-label="Interactive 3D globe of award routes from your home airport. Drag to rotate, or click a route line or destination for details"></div>
       <div class="globe-loading" id="globe-loading"><span class="spin" aria-hidden="true"></span>Loading globe…</div>
-      <div class="globe-fallback" id="globe-fallback">Your browser couldn't start the 3D globe (WebGL may be disabled). Use the route list instead. All the pricing and filtering still works there.</div>
+      <div class="globe-fallback" id="globe-fallback">The globe can't load on this device. All your routes are in the list.</div>
     </div>
     <div class="map-legend" id="map-legend"></div>
     <div class="strip" id="strip" role="dialog" aria-label="Route detail"></div>
@@ -1677,7 +1680,7 @@
     <div class="load-more" id="load-more-wrap" hidden>
       <button class="btn small" id="btn-load-more" type="button">Show more routes</button>
     </div>
-    <p class="list-foot">Miles shown are published-chart saver estimates ("~" = priced dynamically). Open a route to check real seats before you transfer; transfers can't be undone.</p>
+    <p class="list-foot">Prices are estimates. Check seats before you move points; transfers can't be undone.</p>
   </aside>
 </div>
 
@@ -1722,14 +1725,14 @@
     <button class="btn ghost small" data-close="dlg-edu" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body">
-    <h3>What a "transfer partner" is</h3>
-    <p>Chase, Amex, Capital One, Bilt, and Citi don't fly planes. They let you move points into an airline's own frequent-flyer program, usually at 1:1. Once moved, the points behave like any other mileage balance, with that airline's rules and availability.</p>
-    <h3>Ratios aren't always 1:1</h3>
-    <p>Most transfers are 1:1, but a few run richer or leaner during promotions. Check the live ratio in your card issuer's transfer portal before you move points. Transfers are one-way and usually irreversible.</p>
-    <h3>What a "sweet spot" is</h3>
-    <p>Airlines price award charts by their own logic, not distance alone. A sweet spot is a route where a partner program charges far fewer miles than the flight is worth. ANA's chart via Virgin Atlantic Flying Club for travel to Japan is a classic example. This tool's badges point at the cheapest booking program for a route, not necessarily the operating airline.</p>
-    <h3>Why not just redeem through the travel portal</h3>
-    <p>Card portals typically redeem points at a fixed 1–1.5¢ each. Transferring to an airline partner and booking a well-priced award can return several times that per point, often two to three times the value.</p>
+    <h3>Transfer partners</h3>
+    <p>Your card points can move into airline programs, usually one to one. Once moved, you book with the airline's miles.</p>
+    <h3>Before you transfer</h3>
+    <p>Transfers can't be undone. Find a seat first, then move only what you need.</p>
+    <h3>Sweet spots</h3>
+    <p>Some programs charge far fewer miles for the same flight. Those routes are marked Sweet spot.</p>
+    <h3>Why not the travel portal?</h3>
+    <p>Portals usually give about 1¢ per point. Transferring often gets you two to three times that.</p>
   </div>
   <div class="dlg-foot"><button class="btn primary" data-close="dlg-edu" type="button">Got it</button></div>
 </dialog>
@@ -1747,15 +1750,10 @@
     <button class="btn ghost small" data-close="dlg-help" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body">
-    <p>Set a home airport, then enter your point balances on the left. For every route, Milescope finds every frequent-flyer program that can book it, works out which of your cards transfers there (including any transfer bonus running right now), and ranks the options by how many of <em>your</em> points each one costs. If no single balance covers it, it checks whether pooling two does.</p>
-    <p>Route lines are colored by the card you'd pay with. Bright and animated means you can book it now; dim means you can't yet.</p>
-    <p>Drag the globe to rotate it, or click any route line or destination to see the price, carrier, and which card gets you there. Clicking a route in the list on the right flies the globe to it too.</p>
-    <h3>Where the numbers come from</h3>
-    <ol class="scope-list">
-      <li><strong>Who flies where:</strong> real nonstop carriers for the hub airports, checked September 2026. Other home airports show typical connecting options.</li>
-      <li><strong>Which card reaches which airline:</strong> the September 2026 transfer-partner chart, with the non-1:1 ratios (e.g. Amex → Emirates is 5:4) and live transfer bonuses applied.</li>
-      <li><strong>How many miles:</strong> published-chart saver estimates. Programs that price dynamically are marked "~". For the real number on a real date, use the live seat check, which comes from seats.aero.</li>
-    </ol>
+    <p>Pick your airport and enter your points. Milescope shows every trip you can book and the cheapest way to pay for it.</p>
+    <p>Bright routes are ones you can book now. Tap any route for the details.</p>
+    <h3>About the prices</h3>
+    <p>Prices are typical award prices, updated September 2026. A "~" means the airline changes prices often. Check real seats before you move points.</p>
   </div>
   <div class="dlg-foot"><button class="btn primary" data-close="dlg-help" type="button">Got it</button></div>
 </dialog>
@@ -1765,9 +1763,8 @@
     <button class="btn ghost small" data-close="dlg-settings" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body">
-    <h3>Live availability (seats.aero)</h3>
-    <p>Live award seats come from <a href="https://seats.aero" target="_blank" rel="noopener">seats.aero</a>. If the site owner has connected a key, it just works. Otherwise, paste your own seats.aero Pro key (from your seats.aero account settings) to switch it on for yourself.</p>
-    <p class="hint">Your key is saved in this browser only. It's passed through this site's serverless function for each search (seats.aero blocks direct browser calls) and is never stored or logged there.</p>
+    <h3>Live award seats</h3>
+    <p>Add a <a href="https://seats.aero" target="_blank" rel="noopener">seats.aero</a> Pro key to see real seats for each route.</p>
     <div class="field">
       <label for="settings-seats-key">seats.aero API key</label>
       <input type="password" id="settings-seats-key" autocomplete="off" spellcheck="false" placeholder="Paste your personal API key">
@@ -2948,6 +2945,8 @@ function initGlobe(){
     var origin = AP[state.home];
     World.pointOfView({lat:origin.lat, lng:origin.lng, altitude:2.1}, 0);
     globeReady = true;
+    window.__msWorld = World;
+    if(window.MSGlobeGlass) window.MSGlobeGlass(World, document.querySelector(".globe-stage"), "lg-globe");
     updateGlobeSize();
     globeLoadingEl.hidden = true;
   }catch(err){
@@ -3622,8 +3621,8 @@ var settingsStatusEl = document.getElementById("settings-seats-status");
 document.getElementById("btn-settings").addEventListener("click",function(){
   settingsKeyInput.value = state.seatsAeroKey || "";
   settingsStatusEl.textContent = liveSeatsState==="server"
-    ? "This site already has live seats switched on. A personal key is optional."
-    : (state.seatsAeroKey ? "A key is saved in this browser." : "");
+    ? "Live seats are already on."
+    : (state.seatsAeroKey ? "Key saved." : "");
   dlgSettings.showModal();
 });
 document.getElementById("settings-seats-save").addEventListener("click",function(){
@@ -3632,7 +3631,7 @@ document.getElementById("settings-seats-save").addEventListener("click",function
   saveSeatsAeroKey(v); availabilityCache = {};
   if(liveSeatsState!=="server") liveSeatsState = "byok";
   updateLiveStatusUI(liveMeta);
-  settingsStatusEl.textContent = "Saved to this browser.";
+  settingsStatusEl.textContent = "Saved.";
 });
 document.getElementById("settings-seats-remove").addEventListener("click",function(){
   saveSeatsAeroKey(null); availabilityCache = {};
@@ -3900,6 +3899,8 @@ function initHeroGlobe(){
 
     sizeHeroGlobe();
     heroReady = true;
+    window.__msHero = HeroGlobe;
+    if(window.MSGlobeGlass) window.MSGlobeGlass(HeroGlobe, mount, "lg-hero");
     loading.hidden = true;
     if(!reduced) buildPlanes();
   }catch(err){ root.classList.add("globe-failed"); heroReady = false; }
@@ -4505,6 +4506,46 @@ function mountThumb(host, attr){
 mountThumb(document.getElementById("cabin-toggle"), "aria-checked");
 mountThumb(document.getElementById("trip-toggle"), "aria-checked");
 mountThumb(document.querySelector(".mobiletabs"), "aria-pressed");
+
+/* ---------- 5. glass globe ----------
+   A glass ball sized exactly to the globe on screen: projected radius from
+   the camera distance and field of view, re-measured whenever the camera
+   moves. Highlights and a bright rim come from CSS; on Chromium the ball
+   also refracts, bending the map near its edge like real glass. */
+function attachGlobeGlass(g, host, id){
+  if(!g || !host || host.__glass) return;
+  host.__glass = true;
+  var el = document.createElement("div");
+  el.className = "globe-glass"; el.setAttribute("aria-hidden","true");
+  if(canRefract) el.style.backdropFilter = "url(#"+id+")";
+  host.appendChild(el);
+  var lastD = 0, rebuildT = null, raf = 0;
+  function measure(){
+    raf = 0;
+    var cam = g.camera(), canvas = g.renderer().domElement;
+    var d = cam.position.length(), R = (g.getGlobeRadius ? g.getGlobeRadius() : 100);
+    if(d <= R) return;
+    var cr = canvas.getBoundingClientRect(), hr = host.getBoundingClientRect();
+    if(!cr.height) return;
+    var r = (cr.height/2) * (R/Math.sqrt(d*d-R*R)) / Math.tan(cam.fov*Math.PI/360);
+    var D = Math.round(r*2);
+    el.style.width = el.style.height = D+"px";
+    el.style.left = Math.round(cr.left - hr.left + cr.width/2 - D/2)+"px";
+    el.style.top  = Math.round(cr.top  - hr.top  + cr.height/2 - D/2)+"px";
+    if(canRefract && Math.abs(D-lastD) > Math.max(6, lastD*0.03)){
+      clearTimeout(rebuildT);
+      rebuildT = setTimeout(function(){ lastD = D; buildFilter(id, el, D/2, D*0.14, Math.min(70, D*0.09)); }, 120);
+    }
+  }
+  function schedule(){ if(!raf) raf = requestAnimationFrame(measure); }
+  g.controls().addEventListener("change", schedule);
+  window.addEventListener("resize", schedule);
+  if(window.ResizeObserver) new ResizeObserver(schedule).observe(host);
+  setTimeout(schedule, 60); setTimeout(schedule, 600);
+}
+window.MSGlobeGlass = attachGlobeGlass;
+if(window.__msWorld) attachGlobeGlass(window.__msWorld, document.querySelector(".globe-stage"), "lg-globe");
+if(window.__msHero) attachGlobeGlass(window.__msHero, document.getElementById("ob-globe-mount"), "lg-hero");
 
 /* ---------- 4. view transitions ---------- */
 window.MSVT = function(el, update){
