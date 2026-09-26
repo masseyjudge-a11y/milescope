@@ -1141,6 +1141,8 @@
   .bonus-card{display:flex;gap:9px;align-items:flex-start;padding:11px 12px;border-radius:14px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.18);font-size:12.5px;color:var(--text-2)}
   .bonus-card b{color:#FDE68A}
   .bonus-card small{display:block;color:var(--text-4);font-size:10.5px;margin-top:2px}
+  .bonus-card small a{color:var(--accent-2);text-decoration:none}
+  .bonus-card.auto{border-color:rgba(125,211,252,.28);background:rgba(56,189,248,.06)}
   .bonus-card .card-dot{margin-top:5px}
   .deal-item{border-top-color:rgba(255,255,255,.07)}
 
@@ -3450,10 +3452,33 @@ function bonusCardsHtml(){
   return '<div class="rd-label">Transfer bonuses running now <span>already applied to prices</span></div><div class="bonus-grid">'+
     live.map(function(b){
       var days = Math.max(0, Math.ceil((new Date(b.ends+"T23:59:59").getTime()-now)/86400000));
-      return '<div class="bonus-card">'+dot(b.from)+'<div><b>+'+b.pct+'%</b> '+curName(b.from)+' → '+
+      return '<div class="bonus-card'+(b.auto?" auto":"")+'">'+dot(b.from)+'<div><b>+'+b.pct+'%</b> '+curName(b.from)+' → '+
         b.to.map(function(t){ return BOOK_SHORT[t]; }).join(", ")+
-        '<small>'+(days<=1 ? "Ends today" : "Ends in "+days+" days")+'</small></div></div>';
+        '<small>'+(days<=1 ? "Ends today" : (b.endsInferred ? "Ends ~" : "Ends in ")+days+" days")+
+        (b.auto ? ' · <a href="'+escapeHtml(/^https?:\/\//.test(b.link)?b.link:"#")+'" target="_blank" rel="noopener noreferrer">Auto-detected from '+escapeHtml(b.source)+'</a>' : "")+
+        '</small></div></div>';
     }).join("")+'</div>';
+}
+
+/* ===================== LIVE BONUSES (/api/bonuses, powered by TypeSafe Jev) =====================
+   Merges bonuses the server found in points-blog posts into BONUSES, so
+   every price, plan and ¢/pt picks them up. A detected bonus only adds;
+   it never removes a curated one, and duplicates of a curated bonus
+   (same currency, program and size) are skipped. */
+function loadLiveBonuses(){
+  fetch("/api/bonuses").then(function(r){ return r.ok ? r.json() : null; }).then(function(data){
+    if(!data || !Array.isArray(data.bonuses)) return;
+    var added = 0;
+    data.bonuses.forEach(function(b){
+      var to = (b.to||[]).filter(function(t){
+        return TRANSFERS[t] && TRANSFERS[t][b.from] && !BONUSES.some(function(x){ return x.from===b.from && x.to.indexOf(t)>-1 && x.pct>=b.pct; });
+      });
+      if(!to.length || !(b.pct>0) || !/^\d{4}-\d{2}-\d{2}$/.test(b.ends||"")) return;
+      BONUSES.push({from:b.from, to:to, pct:b.pct, ends:b.ends, endsInferred:!!b.endsInferred, auto:true, source:b.source, link:b.link});
+      added++;
+    });
+    if(added){ renderAll(); if(document.getElementById("dlg-deals").open) renderDeals([]); }
+  }).catch(function(){ /* no key / not deployed: curated list stands */ });
 }
 function renderDeals(items){
   var body = document.getElementById("deals-body");
@@ -3487,6 +3512,7 @@ renderAll();
 renderTrips();
 updateLiveStatusUI(null);
 fetchLiveStatus();
+loadLiveBonuses();
 
 /* ══════════════════════════════════════════════════════════════════════
    ONBOARDING, landing (live globe) → getting started → setup → map
