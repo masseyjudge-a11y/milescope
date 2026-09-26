@@ -1370,6 +1370,54 @@
     background:radial-gradient(closest-side,rgba(255,255,255,.22),rgba(255,255,255,0));transform:rotate(-24deg);filter:blur(2px)}
   .ob-globe .globe-glass{z-index:1}
   @media (prefers-reduced-motion:reduce){ .globe-glass{transition:none} }
+
+  /* ══════════════════════════════════════════════════════════════════
+     RIGID LAYER: straight edges, hairline structure, no pills.
+     One radius scale for the whole app: 2px controls, 4px panels.
+     (The globe and card faces keep their real-world shapes.)
+     ══════════════════════════════════════════════════════════════════ */
+  :root{--r-ctl:2px;--r-pane:4px;--hair:rgba(255,255,255,.09)}
+  .topbar,.wallet-col,.routes-col,dialog,.strip,.mobiletabs,.toast,.best-pick,.nl-box,.rd-hero,.bonus-card,
+  .map-hint,.map-legend,.stat-strip .stat,.stat-strip .live-status{border-radius:var(--r-pane) !important}
+  .btn,.chip,.home-pill,.icon-btn,.segmented,.segmented button,.seg-thumb,.stepper,.stepper button,.search-wrap input,
+  .filter-row select,.wallet-row input[type=number],.field input,.nl-chip,.row-status,.badge,.rd-meta span,.src,
+  .best-tag,.sweet-tag,.bonus-tag,.st,.tb-item,.tb-verdict,.opt-row,.verdict,.live-row,.live-skel i,.search-hint,
+  .mobiletabs button,.navtabs button,.navtabs .nav-cs,.strip-x,.dlg-head .btn.ghost,.live-btn,.brand,.brand .mark,
+  .ob-btn,.ob-chip,.ob-ap-field,.ob-ap-list,.ob-ap-list li,.ob-bal,.ob-bal input,.ob-bal-presets button,.ob-acc,.ob-callout,
+  .ob-panel,.ob-eyebrow,.stepper output{border-radius:var(--r-ctl) !important}
+  .toggle{border-radius:var(--r-ctl) !important}
+  .toggle::after{border-radius:1px !important}
+  .vd-ic,.plan-steps li::before{border-radius:var(--r-ctl) !important}
+
+  /* the route list: one table-like column divided by hairlines, not floating cards */
+  .rows{border-top:1px solid var(--hair)}
+  .row-card,.rows .row-card:first-child{margin:0 !important;border:0 !important;border-bottom:1px solid var(--hair) !important;
+    border-radius:0 !important;background:none !important;padding:12px 4px !important}
+  .row-card:hover{background:rgba(255,255,255,.04) !important;transform:none !important}
+  .row-card.ok{box-shadow:inset 2px 0 0 var(--ok)}
+  .row-card:active{transform:none !important}
+  .row-status{background:none !important;padding:0 !important}
+  .badge{background:none !important;border:1px solid var(--hair);padding:1px 6px !important}
+
+  /* panes: flatter light, crisper rim */
+  .wallet-col::before,.routes-col::before,.topbar::before,dialog::before,.strip::before{
+    background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.05) 30%,rgba(255,255,255,.03)) !important}
+  .sb-block+.sb-block{border-top:1px solid var(--hair) !important}
+
+  /* option list + detail: ruled rows instead of stacked bubbles */
+  .opt-list{gap:0 !important;border-top:1px solid var(--hair)}
+  .opt-row{border:0 !important;border-bottom:1px solid var(--hair) !important;border-radius:0 !important;background:none !important;padding:12px 2px !important}
+  .opt-row.best{box-shadow:inset 2px 0 0 var(--accent);padding-left:12px !important}
+  .rd-hero{background:rgba(255,255,255,.035) !important}
+  .rd-meta span{background:none !important;border:1px solid var(--hair);padding:3px 8px !important}
+  .tb-list{gap:0 !important;border-top:1px solid var(--hair)}
+  .tb-item{border:0 !important;border-bottom:1px solid var(--hair) !important;border-radius:0 !important;background:none !important}
+  .tb-item:hover{transform:none !important;background:rgba(255,255,255,.04) !important}
+
+  /* chips become square tags */
+  .nl-chip{background:rgba(56,189,248,.12) !important}
+  .chip{padding:8px 14px !important}
+  .mobiletabs .seg-thumb{border-radius:var(--r-ctl) !important}
 </style>
 </head>
 <body>
@@ -4453,9 +4501,9 @@ function buildFilter(id, el, radius, bezel, strength){
   ensureDefs().appendChild(f);
 }
 var PANES = [
-  {id:"lg-wallet", sel:".wallet-col", r:22, bezel:26, k:46},
-  {id:"lg-routes", sel:".routes-col", r:22, bezel:26, k:46},
-  {id:"lg-topbar", sel:".topbar",     r:18, bezel:14, k:26}
+  {id:"lg-wallet", sel:".wallet-col", r:4, bezel:26, k:46},
+  {id:"lg-routes", sel:".routes-col", r:4, bezel:26, k:46},
+  {id:"lg-topbar", sel:".topbar",     r:4,  bezel:14, k:26}
 ];
 if(canRefract){
   document.documentElement.classList.add("lg-refract");
