@@ -1438,6 +1438,8 @@
   #onboarding.zoom-intro .ob-scrim{opacity:0}
   #onboarding.zoom-intro .ob-top{opacity:0}
   #onboarding .ob-scrim{transition:opacity 1.6s ease .5s,background .8s var(--e-expo),backdrop-filter .8s ease}
+
+  .deals-note{font-size:12px !important;color:var(--text-3) !important;margin:0 0 14px !important;padding-left:10px;border-left:2px solid var(--accent-line)}
 </style>
 </head>
 <body>
@@ -1809,7 +1811,7 @@
     <button class="btn ghost small" data-close="dlg-deals" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
   </div>
   <div class="dlg-body" id="deals-body"><p style="color:var(--text-3)">Loading the latest posts…</p></div>
-  <div class="dlg-foot"><span class="hint" style="margin-right:auto">Bonuses are built into every price you see.</span><button class="btn primary" data-close="dlg-deals" type="button">Close</button></div>
+  <div class="dlg-foot"><span class="hint" id="deals-refresh" style="margin-right:auto">Bonuses update on their own every 6 hours and are already in every price.</span><button class="btn primary" data-close="dlg-deals" type="button">Close</button></div>
 </dialog>
 
 <dialog id="dlg-help" aria-labelledby="dlg-help-title">
@@ -1819,6 +1821,8 @@
   <div class="dlg-body">
     <p>Pick your airport and enter your points. Milescope shows every trip you can book and the cheapest way to pay for it.</p>
     <p>Bright routes are ones you can book now. Tap any route for the details.</p>
+    <h3>How deals stay current</h3>
+    <p>Every 6 hours, Milescope reads the big points blogs and uses TypeSafe's Jev model to spot new transfer bonuses. A bonus is only added if Jev is confident and the card really transfers to that airline. Anything unclear is skipped. Transfer partners are checked by hand.</p>
     <h3>About the prices</h3>
     <p>Prices are typical award prices, updated September 2026. A "~" means the airline changes prices often. Check real seats before you move points.</p>
   </div>
@@ -3814,6 +3818,8 @@ function loadLiveBonuses(){
   fetch("/api/bonuses").then(function(r){ return r.ok ? r.json() : null; }).then(function(data){
     if(!data || !Array.isArray(data.bonuses)) return;
     var added = 0;
+    var note = document.getElementById("deals-refresh");
+    if(note && data.updated) note.textContent = "Bonuses update on their own every 6 hours. Last checked "+(timeAgo(data.updated)||"just now")+".";
     data.bonuses.forEach(function(b){
       var to = (b.to||[]).filter(function(t){
         return TRANSFERS[t] && TRANSFERS[t][b.from] && !BONUSES.some(function(x){ return x.from===b.from && x.to.indexOf(t)>-1 && x.pct>=b.pct; });
@@ -3833,7 +3839,7 @@ function renderDeals(items){
       '<div class="deal-title">'+escapeHtml(it.title)+'</div>'+
       '<div class="deal-meta">'+escapeHtml(it.source)+(it.pubDate?" · "+timeAgo(it.pubDate):"")+'</div></a>';
   }).join("");
-  body.innerHTML = bonusCardsHtml() +
+  body.innerHTML = '<p class="deals-note">Milescope checks the points blogs every 6 hours and uses TypeSafe’s Jev model to pick out new transfer bonuses. New ones are marked Auto-detected.</p>' + bonusCardsHtml() +
     (list ? '<div class="rd-label">From the points blogs</div><div class="deal-list">'+list+'</div>' : "");
 }
 function loadDeals(){
