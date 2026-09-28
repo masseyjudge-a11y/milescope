@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Milescope · Product case study</title>
-<meta name="description" content="How Milescope turns a wallet of credit card points into a bookable trip: the problem, the decisions, the metrics, and what's next.">
+<meta name="description" content="How I built Milescope, an app that shows where your credit card points can take you: the problem, what I found, the decisions I made, and how I'd measure it.">
 <meta property="og:title" content="Milescope · Product case study">
-<meta property="og:description" content="From 'what can my points do?' to a ranked, bookable plan in under a minute.">
+<meta property="og:description" content="From 'what can my points do?' to a trip you can book, in under a minute.">
 <link rel="icon" href="logo.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -140,25 +140,6 @@
   .col .card p{font-size:13px;margin-top:4px}
   @media (max-width:860px){ .road{grid-template-columns:1fr} }
 
-  /* architecture */
-  .arch{margin-top:30px;padding:22px;border-radius:20px;border:1px solid var(--line);background:rgba(255,255,255,.02);overflow-x:auto}
-  .arch svg{display:block;min-width:720px;width:100%;height:auto}
-  .arch text{font-family:var(--sans);fill:var(--text-2);font-size:13px}
-  .arch .t{fill:#fff;font-weight:600;font-size:14px}
-  .arch rect{fill:rgba(255,255,255,.04);stroke:rgba(255,255,255,.16)}
-  .arch .hl{fill:rgba(56,189,248,.1);stroke:rgba(125,211,252,.5)}
-  .arch path{stroke:rgba(255,255,255,.35);fill:none;stroke-width:1.4}
-
-  /* waiting states */
-  .wait-head{margin-top:56px}
-  .orb-card{display:flex;flex-direction:column}
-  .orb-card .tag{align-self:flex-start}
-  .orb-stage{display:flex;align-items:center;justify-content:center;height:132px;margin:-6px -6px 16px;border-radius:14px;
-    background:radial-gradient(70% 90% at 50% 40%,rgba(56,189,248,.09),rgba(255,255,255,.015) 70%);border:1px solid var(--line)}
-  .orb-card code{font-size:11.5px;color:var(--accent-2);background:rgba(56,189,248,.1);padding:2px 7px;border-radius:6px}
-  .orb-inline{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;color:var(--text-3)}
-  .orb-inline canvas{flex:none}
-  .credit{font-size:13px;color:var(--text-3);margin-top:16px}
   .close{margin-top:110px;padding:44px;border-radius:28px;text-align:center;background:var(--glass);border:1px solid var(--rim);
     -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
   .close h2{margin:0 auto;max-width:18ch}
@@ -179,8 +160,8 @@
 <nav class="nav" aria-label="Case study">
   <a class="brand" href="/"><i aria-hidden="true"></i>Milescope</a>
   <div class="toc">
-    <a href="#problem">Problem</a><a href="#audit">v1 audit</a><a href="#solution">Solution</a>
-    <a href="#decisions">Decisions</a><a href="#metrics">Metrics</a><a href="#next">What's next</a>
+    <a href="#problem">Problem</a><a href="#audit">Testing v1</a><a href="#solution">What I built</a>
+    <a href="#decisions">Decisions</a><a href="#metrics">Metrics</a><a href="#learned">Learnings</a><a href="#next">What's next</a>
   </div>
   <a class="cta" href="/">Open the app</a>
 </nav>
@@ -188,195 +169,169 @@
 <main>
   <header class="hero">
     <div class="eyebrow">Product case study</div>
-    <h1>Points are only valuable if you can spend them.</h1>
-    <p class="lede">Milescope turns a wallet of credit card points into a ranked, bookable trip plan: where you can go,
-      which program to book through, and exactly which card to transfer from.</p>
+    <h1>Points are only worth something if you can use them.</h1>
+    <p class="lede">Milescope shows you where your credit card points can actually take you, which airline program to book
+      through, and which card to transfer from. I built it because answering that question myself took an evening and a spreadsheet.</p>
     <dl class="meta">
-      <div><dt>Role</dt><dd>Product, design &amp; build</dd></div>
-      <div><dt>Timeline</dt><dd>Sept 2026 (v1 → v2)</dd></div>
-      <div><dt>Stack</dt><dd>Static web app, Vercel functions</dd></div>
-      <div><dt>Built with</dt><dd>AI-assisted development</dd></div>
+      <div><dt>Role</dt><dd>Product, design and build</dd></div>
+      <div><dt>Timeline</dt><dd>September 2026</dd></div>
+      <div><dt>Built with</dt><dd>HTML, JavaScript, Vercel</dd></div>
+      <div><dt>How</dt><dd>Solo, with AI coding tools</dd></div>
     </dl>
     <div class="tldr">
-      <div class="stat rv"><b class="num">25</b><span>booking programs priced for every route, not just one “best guess”</span></div>
-      <div class="stat rv"><b class="num">5</b><span>card currencies with real transfer ratios and live bonuses applied</span></div>
-      <div class="stat rv"><b>&lt;60s</b><span>target time from landing to a bookable plan, via a 3-step setup</span></div>
+      <div class="stat rv"><b class="num">25</b><span>airline programs priced for every route</span></div>
+      <div class="stat rv"><b class="num">5</b><span>card point types, with real transfer ratios and current bonuses</span></div>
+      <div class="stat rv"><b>&lt;60s</b><span>goal for getting from the home page to a trip you can book</span></div>
     </div>
   </header>
 
   <section id="problem" class="rv">
     <div class="eyebrow">01 · The problem</div>
-    <h2>Transferable points are flexible, and that flexibility is the problem.</h2>
-    <p>Chase, Amex, Capital One, Citi and Bilt points can each move into a dozen or more airline programs, at
-      different ratios, with bonuses that come and go every few weeks. The same flight can cost 52,500 miles
-      in one program and 88,000 in another. To answer “where can I go?” a traveler has to cross-reference transfer charts,
-      award charts, airline partnerships and live seat availability, usually across five browser tabs and a spreadsheet.</p>
+    <h2>Your points can go almost anywhere. That’s what makes them hard to use.</h2>
+    <p>Chase, Amex, Capital One, Citi and Bilt points can each move to a dozen or more airlines, at different rates, and the
+      bonuses change every few weeks. The same flight can cost 52,500 miles through one airline and 88,000 through another.
+      Figuring out the best option means juggling transfer charts, award charts and seat searches across a lot of tabs.</p>
     <div class="grid2">
-      <div class="card"><span class="tag blue">Primary user</span><h3>The multi-card traveler</h3>
-        <p>Holds two or more transferable currencies, takes one to three award trips a year, and knows points are
-          “worth more than cash back” but not how to prove it for a specific trip.</p></div>
-      <div class="card"><span class="tag amber">Job to be done</span><h3>“Show me where my points can take me, and the cheapest way to pay.”</h3>
-        <p>Existing tools answer narrower questions: award search assumes you already know the program; issuer
-          portals only price their own currency; blogs describe sweet spots, not your wallet.</p></div>
+      <div class="card"><span class="tag blue">Who it’s for</span><h3>People with two or more points cards</h3>
+        <p>They take one to three trips a year on points. They know points are worth more than cash back, but not how to get
+          that value on a specific trip.</p></div>
+      <div class="card"><span class="tag amber">What they want</span><h3>“Show me where I can go, and the cheapest way to pay.”</h3>
+        <p>Other tools each answer part of that. Award search assumes you already know the airline, card sites only show their
+          own points, and blogs talk about deals in general, not your balances.</p></div>
     </div>
-    <p class="quote">The gap isn’t information. It’s combining your wallet with the rules into one decision.</p>
   </section>
 
   <section id="audit" class="rv">
-    <div class="eyebrow">02 · Auditing my own v1</div>
-    <h2>v1 looked finished. Checked against the real rules, it wasn’t trustworthy.</h2>
-    <p>Before adding features I tested v1 as a skeptical user would: checked every airline and transfer partner against
-      the current published charts, and walked the onboarding end to end. In a trust-sensitive product, one wrong answer
-      costs you the user, so accuracy came before new features.</p>
+    <div class="eyebrow">02 · Testing my first version</div>
+    <h2>Version 1 looked done. When I checked it properly, it wasn’t something you could trust.</h2>
+    <p>Before adding anything new, I went through it like a skeptical user: checked every airline and transfer partner against
+      the real charts, and ran through setup from start to finish. If an app like this is wrong even once, people stop using it,
+      so fixing accuracy came first.</p>
     <div class="table" role="table">
-      <div class="tr" role="row"><div>Finding</div><div>User impact</div><div>Fix in v2</div></div>
-      <div class="tr" role="row"><div><b>Airlines assigned by a hash of airport codes</b></div><div>“JetBlue to Anchorage.” Flights that don’t exist erode trust instantly.</div><div>Hand-verified nonstop carrier tables for each hub airport.</div></div>
-      <div class="tr" role="row"><div><b>Wrong transfer partners</b></div><div>Capital One → Virgin Atlantic and Chase → LifeMiles listed; neither exists. A user could plan a trip around an impossible transfer.</div><div>Rebuilt from the Sept 2026 partner chart, including non-1:1 ratios (Amex → Emirates 5:4).</div></div>
-      <div class="tr" role="row"><div><b>Setup never asked for balances</b></div><div>Picking cards silently kept fake demo balances, so 17 of 18 routes showed as “affordable.”</div><div>Balance step with one-tap presets; blanks mean 0, never demo data.</div></div>
-      <div class="tr" role="row"><div><b>One answer per route</b></div><div>No way to see alternatives, or combine two cards into one airline account.</div><div>Every bookable program ranked for your wallet, with pooling across currencies.</div></div>
-      <div class="tr" role="row"><div><b>Live data surfaced as an error</b></div><div>“No API key configured” shown to every visitor.</div><div>Honest labels (“chart estimate” vs “live seats”) and a server-side seat check.</div></div>
+      <div class="tr" role="row"><div>What I found</div><div>Why it mattered</div><div>What I changed</div></div>
+      <div class="tr" role="row"><div><b>Some flights didn’t exist</b></div><div>It showed routes like JetBlue to Anchorage. One fake flight and you stop believing the rest.</div><div>Checked the real nonstop airlines for every home airport by hand.</div></div>
+      <div class="tr" role="row"><div><b>Wrong transfer partners</b></div><div>It listed transfers that aren’t possible, so someone could plan a whole trip around one.</div><div>Rebuilt the partner list from the current charts, including uneven rates.</div></div>
+      <div class="tr" role="row"><div><b>Setup never asked for balances</b></div><div>It quietly used demo numbers, so almost every trip looked affordable.</div><div>Added a balance step with quick presets. Blank means zero, never fake data.</div></div>
+      <div class="tr" role="row"><div><b>Only one answer per trip</b></div><div>No way to compare options or combine two cards.</div><div>Every airline that can book the trip, ranked for your points, including combining cards.</div></div>
     </div>
   </section>
 
   <section id="solution" class="rv">
-    <div class="eyebrow">03 · The solution</div>
-    <h2>From “what can my points do?” to a transfer plan in five steps.</h2>
+    <div class="eyebrow">03 · What I built</div>
+    <h2>From “what can my points do?” to a plan in five steps.</h2>
     <div class="flow">
-      <div class="step"><b>Home airport</b><span>One tap on a common hub, or search</span></div>
-      <div class="step"><b>Cards</b><span>Pick the cards you hold; each switches on its currency</span></div>
-      <div class="step"><b>Balances</b><span>A rough number with one tap</span></div>
-      <div class="step"><b>Best pick</b><span>The highest-value trip you can book right now</span></div>
-      <div class="step"><b>Plan</b><span>Exact transfers, alternatives, and a live seat check</span></div>
+      <div class="step"><b>Home airport</b><span>Tap a common one or search</span></div>
+      <div class="step"><b>Cards</b><span>Pick the cards you have</span></div>
+      <div class="step"><b>Balances</b><span>A rough number is fine</span></div>
+      <div class="step"><b>Best pick</b><span>The best trip you can book right now</span></div>
+      <div class="step"><b>Plan</b><span>Which points to move, and a live seat check</span></div>
     </div>
     <div class="grid3">
-      <div class="card"><span class="tag green">Decide</span><h3>Best way to pay</h3><p>Every program that can book a route, ranked by how many of <em>your</em> points it costs, after ratios and bonuses. Pools two cards when neither covers it alone.</p></div>
-      <div class="card"><span class="tag green">Compare</span><h3>Value in ¢ per point</h3><p>Miles cost vs. an estimated cash fare: the metric points travelers already use to judge a redemption, surfaced on every route.</p></div>
-      <div class="card"><span class="tag green">Plan</span><h3>Trip board</h3><p>Save trips across the year and see whether one wallet covers all of them, currency by currency.</p></div>
+      <div class="card"><span class="tag green">Decide</span><h3>Best way to pay</h3><p>Every airline that can book the trip, sorted by how many of your points it costs.</p></div>
+      <div class="card"><span class="tag green">Compare</span><h3>Cents per point</h3><p>How much value you get from your points compared with paying cash, shown on every route.</p></div>
+      <div class="card"><span class="tag green">Plan</span><h3>Trip board</h3><p>Save a few trips for the year and see if your points cover all of them.</p></div>
     </div>
-    <h3 class="wait-head">Waits that say what they’re doing</h3>
-    <p>A spinner only says “something is happening.” Every wait in Milescope uses a Thinking Orb instead, and each kind of work
-      gets its own motion, so you can tell what the app is doing without reading anything.</p>
+    <h3 class="wait-head">Loading that tells you what’s happening</h3>
+    <p>Instead of a generic spinner, each kind of wait gets its own small animation, so you can tell what the app is doing at a glance.</p>
     <div class="grid3">
-      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="searching" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Searching orb"></canvas></div>
+      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="searching" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Searching animation"></canvas></div>
         <span class="tag blue">Searching</span><h3>Finding seats</h3>
-        <p>A scan line sweeps a dotted globe while the map loads and while a live award-seat check runs.</p>
-        <div class="orb-inline"><canvas data-orb="searching" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Looking for open award seats…</div></div>
-      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="solving" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Solving orb"></canvas></div>
-        <span class="tag blue">Solving</span><h3>Reading a described trip</h3>
-        <p>Bands scramble and click back into place while Jev turns a sentence like “beach in winter, business class” into filters.</p>
-        <div class="orb-inline"><canvas data-orb="solving" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Reading your trip…</div></div>
-      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="working" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Working orb"></canvas></div>
-        <span class="tag blue">Working</span><h3>Checking for new bonuses</h3>
-        <p>Particles trace tilted orbits while the deals panel pulls the latest transfer bonuses from the points blogs.</p>
-        <div class="orb-inline"><canvas data-orb="working" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Checking the points blogs…</div></div>
+        <p>Shows while the map loads and while it checks for open award seats.</p></div>
+      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="solving" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Solving animation"></canvas></div>
+        <span class="tag blue">Solving</span><h3>Reading your trip</h3>
+        <p>Shows while it turns something like “beach in winter, business class” into search filters.</p></div>
+      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="working" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Working animation"></canvas></div>
+        <span class="tag blue">Working</span><h3>Checking for deals</h3>
+        <p>Shows while it looks for new transfer bonuses.</p></div>
     </div>
-    <p class="credit">The orbs are <a href="https://libraries.dev/orbs" target="_blank" rel="noopener">Thinking Orbs</a> by Jakub Antalik (MIT).
-      The package is a React component and Milescope has no framework, so I bundled its engine with a small canvas wrapper: about 15 KB, no dependencies.
-      Orbs stop drawing when they’re off screen or the tab is hidden.</p>
+    <p class="credit">Animations from <a href="https://libraries.dev/orbs" target="_blank" rel="noopener">Thinking Orbs</a> by Jakub Antalik.</p>
   </section>
 
   <section id="decisions" class="rv">
-    <div class="eyebrow">04 · Key decisions &amp; tradeoffs</div>
-    <h2>What I chose, what I gave up, and why.</h2>
+    <div class="eyebrow">04 · Decisions I made</div>
+    <h2>What I picked, what I gave up, and why.</h2>
     <div style="margin-top:20px">
       <div class="decision">
-        <h3>Pricing data</h3>
-        <div class="opts"><div class="opt"><b>Live award search for every route</b>Accurate, but slow, rate-limited and costly per visitor.</div>
-          <div class="opt pick"><b>Chart estimates + live check on demand</b>Instant browsing; real seats fetched only when a user signals intent.</div></div>
-        <p class="why"><b>Why:</b> browsing needs speed, booking needs truth. Spending live queries only at the moment of intent keeps one API key inside its daily limit, and the UI labels every estimate as one.</p>
+        <h3>Prices</h3>
+        <div class="opts"><div class="opt"><b>Search live seats for every route</b>Most accurate, but slow and expensive.</div>
+          <div class="opt pick"><b>Estimates first, live check when you ask</b>Browsing is instant, and real seats load when you’re ready to book.</div></div>
+        <p class="why"><b>Why:</b> browsing needs to be fast, booking needs to be right. Every estimate is labeled as one.</p>
       </div>
       <div class="decision">
         <h3>Accounts</h3>
-        <div class="opts"><div class="opt"><b>Sign-up to save a wallet</b>Enables sync; adds friction before any value.</div>
-          <div class="opt pick"><b>No account needed</b>Useful in under a minute, with nothing to sign up for.</div></div>
-        <p class="why"><b>Why:</b> balances are personal financial data, and time-to-value decides whether a first-time visitor stays. Accounts return only once saved trips prove people come back.</p>
-      </div>
-      <div class="decision">
-        <h3>API keys</h3>
-        <div class="opts"><div class="opt"><b>Browser calls the data provider</b>Simple, but exposes keys and is blocked by CORS.</div>
-          <div class="opt pick"><b>Server-side proxy with edge caching</b>Key never ships to the client; repeat searches are free.</div></div>
-        <p class="why"><b>Why:</b> security and cost. A two-hour edge cache means ten people checking Seattle → Tokyo cost one upstream call.</p>
+        <div class="opts"><div class="opt"><b>Sign up to save your wallet</b>Syncs across devices, but asks for a lot up front.</div>
+          <div class="opt pick"><b>No account</b>Useful in under a minute.</div></div>
+        <p class="why"><b>Why:</b> people are wary of typing in financial info, and most first-time visitors leave if they have to sign up first. I’d add accounts once people are coming back.</p>
       </div>
       <div class="decision">
         <h3>Ranking</h3>
-        <div class="opts"><div class="opt"><b>Cheapest miles first</b>Easy to explain, but ignores whether the user can actually pay.</div>
-          <div class="opt pick"><b>Bookable first, then fewest of <em>your</em> points</b>The top answer is always one you can act on today.</div></div>
-        <p class="why"><b>Why:</b> an unaffordable “best” option is noise. The ranking answers the user’s real question, not the chart’s.</p>
+        <div class="opts"><div class="opt"><b>Fewest miles first</b>Simple, but the top result might be something you can’t afford.</div>
+          <div class="opt pick"><b>Trips you can book first</b>The top answer is always one you can act on today.</div></div>
+        <p class="why"><b>Why:</b> the cheapest option doesn’t help if you don’t have the points for it.</p>
       </div>
       <div class="decision">
-        <h3>Scope cut</h3>
-        <div class="opts"><div class="opt"><b>Hotels, multi-city, cash prices</b>Broader, but each doubles the data problem.</div>
-          <div class="opt pick"><b>One-way &amp; round-trip flights from five hubs, done right</b>Narrow and correct beats wide and wrong.</div></div>
-        <p class="why"><b>Why:</b> v1 showed breadth without accuracy destroys trust. Depth first, then expand.</p>
+        <h3>Scope</h3>
+        <div class="opts"><div class="opt"><b>Add hotels, multi-city, cash prices</b>More to offer, but a lot more to get right.</div>
+          <div class="opt pick"><b>Just flights, done well</b>Smaller, but correct.</div></div>
+        <p class="why"><b>Why:</b> the first version showed me that doing a lot badly loses trust fast.</p>
       </div>
     </div>
   </section>
 
   <section id="metrics" class="rv">
-    <div class="eyebrow">05 · How I’d measure success</div>
-    <h2>One metric that means a user got real value.</h2>
+    <div class="eyebrow">05 · How I’d measure it</div>
+    <h2>One number that means someone actually got value.</h2>
     <div class="ns">
-      <div class="eyebrow">North star</div>
-      <h3>Weekly users who open a bookable plan: a route their own wallet can pay for.</h3>
-      <p>It captures activation (a real wallet), relevance (routes they can book) and intent (they opened the plan) in one number.
-        Every step below is instrumented as an analytics event in the app.</p>
-      <div class="funnel" aria-label="Instrumented funnel">
-        <div class="fr"><span><code>landing</code> Visit</span><div class="bar"><i style="--w:100%"></i></div><small>denominator</small></div>
-        <div class="fr"><span><code>onboarding_complete</code></span><div class="bar"><i style="--w:62%"></i></div><small>activation</small></div>
-        <div class="fr"><span><code>route_open</code> bookable</span><div class="bar"><i style="--w:44%"></i></div><small>north star</small></div>
-        <div class="fr"><span><code>live_check</code></span><div class="bar"><i style="--w:21%"></i></div><small>booking intent</small></div>
-        <div class="fr"><span><code>trip_saved</code></span><div class="bar"><i style="--w:12%"></i></div><small>retention signal</small></div>
+      <div class="eyebrow">Main metric</div>
+      <h3>People each week who open a trip their own points can pay for.</h3>
+      <p>It shows they set up a real wallet, found something relevant, and cared enough to look. Each step below is tracked in the app.</p>
+      <div class="funnel" aria-label="Funnel">
+        <div class="fr"><span>Visit the site</span><div class="bar"><i style="--w:100%"></i></div><small>starting point</small></div>
+        <div class="fr"><span>Finish setup</span><div class="bar"><i style="--w:62%"></i></div><small>activation</small></div>
+        <div class="fr"><span>Open a trip they can book</span><div class="bar"><i style="--w:44%"></i></div><small>main metric</small></div>
+        <div class="fr"><span>Check live seats</span><div class="bar"><i style="--w:21%"></i></div><small>ready to book</small></div>
+        <div class="fr"><span>Save a trip</span><div class="bar"><i style="--w:12%"></i></div><small>coming back</small></div>
       </div>
-      <p style="font-size:12.5px;color:var(--text-3)">Bar lengths illustrate the funnel’s shape; they are targets to test, not measured results.</p>
+      <p style="font-size:12.5px;color:var(--text-3)">These percentages are targets to test, not real results yet.</p>
     </div>
-    <div class="grid3">
-      <div class="card"><span class="tag blue">Activation</span><h3>% of visitors reaching a real wallet</h3><p>Completed setup with a balance, or started the sample wallet. The balance step exists to move this.</p></div>
-      <div class="card"><span class="tag amber">Guardrail</span><h3>Accuracy reports</h3><p>Wrong partners or fares reported per 1,000 plans. Trust is the product; this must never trend up.</p></div>
-      <div class="card"><span class="tag red">Guardrail</span><h3>Live check reliability</h3><p>Error and rate-limit share on seat checks, and p75 time to first route. Speed is a feature.</p></div>
+    <div class="grid2">
+      <div class="card"><span class="tag amber">Watch</span><h3>Wrong-answer reports</h3><p>How often people report a wrong partner or price. If this goes up, nothing else matters.</p></div>
+      <div class="card"><span class="tag red">Watch</span><h3>Speed and errors</h3><p>How fast the first results show up, and how often the live seat check fails.</p></div>
     </div>
   </section>
 
-  <section class="rv">
-    <div class="eyebrow">06 · Architecture</div>
-    <h2>Simple on purpose.</h2>
-    <p>A single static page does all pricing in the browser, so it’s instant and free to host. Serverless functions exist
-      only where a secret or a cache is needed.</p>
-    <div class="arch">
-      <svg viewBox="0 0 900 230" role="img" aria-label="Browser app calls three serverless functions; the availability function calls seats.aero with a server-side key and a two-hour edge cache.">
-        <rect class="hl" x="20" y="70" width="210" height="90" rx="14"/><text class="t" x="40" y="104">Browser app</text>
-        <text x="40" y="126">routes · pricing · ranking</text><text x="40" y="146">wallet in localStorage</text>
-        <rect x="330" y="20" width="230" height="56" rx="12"/><text class="t" x="350" y="45">/api/availability</text><text x="350" y="64">key + 2h edge cache</text>
-        <rect x="330" y="88" width="230" height="56" rx="12"/><text class="t" x="350" y="113">/api/deals</text><text x="350" y="132">points-blog RSS · optional</text>
-        <rect x="330" y="156" width="230" height="56" rx="12"/><text class="t" x="350" y="181">/api/live-status</text><text x="350" y="200">schedule check · optional</text>
-        <rect x="660" y="20" width="220" height="56" rx="12"/><text class="t" x="680" y="45">seats.aero</text><text x="680" y="64">cached award space</text>
-        <path d="M230 100 C 280 100, 280 48, 330 48"/><path d="M230 115 L 330 116"/><path d="M230 130 C 280 130, 280 184, 330 184"/>
-        <path d="M560 48 L 660 48"/>
-      </svg>
+  <section id="learned" class="rv">
+    <div class="eyebrow">06 · What I learned</div>
+    <h2>A few things I’d tell myself at the start.</h2>
+    <div class="grid3">
+      <div class="card"><h3>Trust comes before features</h3><p>One fake flight did more damage than any missing feature. Checking the data was the most important work I did.</p></div>
+      <div class="card"><h3>Test it like a stranger would</h3><p>Going through my own app as a skeptical user found problems I’d walked past dozens of times.</p></div>
+      <div class="card"><h3>Cutting scope is a decision</h3><p>Saying no to hotels and cash prices is what made the flight answers good enough to rely on.</p></div>
     </div>
   </section>
 
   <section id="next" class="rv">
     <div class="eyebrow">07 · What’s next</div>
-    <h2>Validate the assumptions, then widen the net.</h2>
+    <h2>Check my assumptions with real people, then grow.</h2>
     <div class="road">
       <div class="col"><h3>Now</h3>
-        <div class="card"><b>5 user interviews + onboarding test</b><p>Validate the core assumption: people know their balances roughly, but not which program to use.</p></div>
-        <div class="card"><b>Turn on analytics</b><p>Baseline the funnel above before changing anything else.</p></div></div>
-      <div class="col"><h3>Next</h3>
-        <div class="card"><b>Self-updating transfer bonuses · built</b><p>Blog posts are pre-filtered in code; TypeSafe’s Jev model answers typed questions (is it a bonus, which card, which airlines, which % and end date) by selecting only from values found in the text. Anything uncertain, or an impossible transfer, is held for review instead of changing prices.</p></div>
-        <div class="card"><b>Plain-English search · built</b><p>“Somewhere warm in March, business, two of us” becomes filters, a ranking, and a plan.</p></div></div>
+        <div class="card"><b>Talk to 5 users</b><p>Check the main assumption: people roughly know their balances, but not which airline to use.</p></div>
+        <div class="card"><b>Get a baseline</b><p>Measure the funnel above before changing anything else.</p></div></div>
+      <div class="col"><h3>Built since</h3>
+        <div class="card"><b>Bonuses that update themselves</b><p>New transfer bonuses are picked up from the points blogs automatically. Anything unclear is held for review.</p></div>
+        <div class="card"><b>Search in plain English</b><p>Type “somewhere warm in March, business, two of us” and get matching trips.</p></div></div>
       <div class="col"><h3>Later</h3>
-        <div class="card"><b>Seat alerts</b><p>Notify when saver space opens on a saved trip. The retention loop.</p></div>
-        <div class="card"><b>Live cash fares &amp; hotels</b><p>Replace estimated ¢/pt with real prices; extend to hotel transfer partners.</p></div></div>
+        <div class="card"><b>Seat alerts</b><p>Get a heads-up when seats open on a saved trip. This is what brings people back.</p></div>
+        <div class="card"><b>Real cash prices and hotels</b><p>Swap estimates for real prices, then add hotel programs.</p></div></div>
     </div>
   </section>
 
   <div class="close rv">
-    <h2>See your own wallet on the map.</h2>
+    <h2>Try it with your own cards.</h2>
     <p>It takes under a minute.</p>
     <a class="cta" href="/">Open Milescope</a>
   </div>
-  <footer>Milescope · Award prices are estimates; always confirm before transferring points.</footer>
+  <footer>Milescope · Award prices are estimates. Always check with the airline before moving points.</footer>
 </main>
 
 <script>
