@@ -25,9 +25,11 @@ function parseTint(c) {
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
-// Reduce Motion gets one still frame, as in the React component.
-function animated() {
-  return !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+// Orbs keep moving under Reduce Motion, like the partner strip: they're
+// small, slow and loop in place, and a frozen loader reads as a stalled
+// page. Set data-orb-still on a canvas to pin it to one frame instead.
+function animated(canvas) {
+  return !canvas.hasAttribute("data-orb-still");
 }
 
 function mount(canvas) {
@@ -55,7 +57,7 @@ function mount(canvas) {
     paintFrame(ctx, MODE_FRAMES[mode](size, t, opts), true, tint);
   };
 
-  if (!animated()) { frame(0.6); return; }
+  if (!animated(canvas)) { frame(0.6); return; }
 
   // One shared clock keeps every orb in phase; each loop sleeps while its
   // canvas is offscreen, hidden, or tabbed away, and ends once it leaves the DOM.
@@ -77,6 +79,7 @@ function mount(canvas) {
   frame((performance.now() / 1000) * eff);
   io.observe(canvas);
   document.addEventListener("visibilitychange", sync);
+  sync();   // start now; the observer's first report pauses it if offscreen
 }
 
 function scan(root) {
