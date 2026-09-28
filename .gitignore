@@ -4,3 +4,4 @@
 .env*
 .claude/
 .fixtures/
+node_modules/

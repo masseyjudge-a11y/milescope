@@ -9,6 +9,8 @@ book it through, and exactly which points to transfer.
 - `index.html`: the whole app (no build step).
 - `api/availability.mjs`: Vercel serverless function that fetches live award
   seats from [seats.aero](https://seats.aero) so the API key stays server-side.
+- `api/assistant.mjs`: the assistant's backend (Groq free tier, or Claude).
+- `vendor/`: Thinking Orbs and Bot Avatars from [libraries.dev](https://libraries.dev), bundled without React.
 
 ## Deploy (Vercel)
 
@@ -16,7 +18,12 @@ book it through, and exactly which points to transfer.
 2. Settings → Environment Variables → add `SEATS_AERO_API_KEY` with a seats.aero
    Pro API key. Without it the site still works; the live-seat check just asks
    visitors to add their own key in Settings.
-3. Every push to `main` redeploys.
+3. Optional: switch on Miles, the assistant in the bottom corner, by adding
+   `GROQ_API_KEY` (free at console.groq.com; about 100 questions a day on the
+   free tier, model `openai/gpt-oss-120b`, override with `GROQ_MODEL`). Or add
+   `ANTHROPIC_API_KEY` to use Claude instead (paid per question; used only when
+   there's no Groq key). Without either, the panel says it isn't switched on yet.
+4. Every push to `main` redeploys.
 
 ## Keeping the data current
 

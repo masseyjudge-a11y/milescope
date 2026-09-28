@@ -1462,6 +1462,58 @@
 
   .deals-note{font-size:12px !important;color:var(--text-3) !important;margin:0 0 14px !important;padding-left:10px;border-left:2px solid var(--accent-line)}
 
+  /* ---- assistant ---- */
+  .asst-fab{position:fixed;z-index:60;right:calc(var(--list-w) + 28px);bottom:22px;width:58px;height:58px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
+    background:var(--glass);border:1px solid var(--glass-rim);box-shadow:0 14px 30px -12px rgba(0,0,0,.7);
+    -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);transition:transform .3s var(--spring)}
+  .asst-fab:hover{transform:translateY(-2px) scale(1.04)}
+  .asst-fab[aria-expanded="true"]{transform:scale(.92)}
+  .asst-fab-tip{position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%);white-space:nowrap;pointer-events:none;
+    font-size:12px;font-weight:600;color:var(--text-1);padding:6px 10px;border-radius:var(--r-ctl);background:rgba(14,19,32,.92);
+    border:1px solid var(--glass-rim);opacity:0;transition:opacity .2s ease}
+  .asst-fab:hover .asst-fab-tip,.asst-fab:focus-visible .asst-fab-tip{opacity:1}
+  .asst-fab[aria-expanded="true"] .asst-fab-tip{opacity:0}
+  .asst{position:fixed;z-index:60;right:calc(var(--list-w) + 28px);bottom:92px;width:min(370px,calc(100vw - 32px));
+    height:min(560px,calc(100vh - 190px));display:flex;flex-direction:column;overflow:hidden;
+    background:rgba(12,16,28,.94);border:1px solid var(--glass-rim);border-radius:var(--r-pane);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.8);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
+    transform-origin:100% 100%;transition:opacity .2s ease,transform .3s var(--spring)}
+  .asst[hidden]{display:flex;opacity:0;transform:translateY(10px) scale(.96);pointer-events:none;visibility:hidden}
+  .asst-head{display:flex;align-items:center;gap:12px;padding:14px 14px 12px;border-bottom:1px solid var(--line)}
+  .asst-id{min-width:0;flex:1}
+  .asst-id b{display:block;font-size:14px;color:var(--text-1)}
+  .asst-id span{display:block;font-size:12px;color:var(--text-3)}
+  .asst-x{flex:none;width:30px;height:30px;border-radius:var(--r-ctl);border:0;background:none;color:var(--text-2);cursor:pointer;font-size:18px;line-height:1}
+  .asst-x:hover{background:rgba(255,255,255,.08);color:#fff}
+  .asst-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+  .asst-msg{max-width:88%;font-size:13.5px;line-height:1.5;padding:9px 12px;border-radius:var(--r-pane);overflow-wrap:anywhere}
+  .asst-msg.me{align-self:flex-end;background:rgba(56,189,248,.16);border:1px solid rgba(125,211,252,.25);color:var(--text-1)}
+  .asst-msg.bot{align-self:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text-1)}
+  .asst-msg.bot p{margin:0}
+  .asst-msg.bot p+p,.asst-msg.bot ul{margin-top:6px}
+  .asst-msg.bot ul{margin-bottom:0;padding-left:18px}
+  .asst-msg.err{color:var(--text-2)}
+  .asst-wait{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-3);align-self:flex-start}
+  .asst-hello{font-size:13.5px;color:var(--text-2);margin:0}
+  .asst-sugs{display:flex;flex-direction:column;gap:6px}
+  .asst-sug{text-align:left;font:inherit;font-size:13px;color:var(--text-1);padding:8px 11px;cursor:pointer;
+    background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--r-ctl)}
+  .asst-sug:hover{background:rgba(56,189,248,.1);border-color:var(--accent-line)}
+  .asst-form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+  .asst-form input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--text-1);padding:9px 11px;
+    background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:var(--r-ctl);outline:none}
+  .asst-form input:focus{border-color:var(--accent-line)}
+  .asst-form button{flex:none;font:inherit;font-size:13px;font-weight:600;padding:0 14px;cursor:pointer;
+    color:#04131F;background:var(--accent);border:0;border-radius:var(--r-ctl)}
+  .asst-form button:disabled{opacity:.45;cursor:default}
+  .asst-note{font-size:10.5px;color:var(--text-4);padding:0 12px 8px;margin:0}
+  @media (max-width:980px){
+    .asst-fab{right:16px;bottom:calc(80px + env(safe-area-inset-bottom));width:54px;height:54px}
+    .asst{right:12px;left:12px;width:auto;bottom:calc(144px + env(safe-area-inset-bottom));height:min(520px,calc(100vh - 230px))}
+    .asst-fab-tip{display:none}
+  }
+
   /* ---- performance ---- */
   /* the grain reads the same standing still, and a moving blend layer
      recomposites the whole screen three times a second */
@@ -1895,6 +1947,23 @@
 
 <div class="ambient" aria-hidden="true"><i></i><i></i></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<button class="asst-fab" id="asst-fab" type="button" aria-expanded="false" aria-controls="asst" aria-label="Ask Miles, the points assistant">
+  <canvas id="asst-fab-bot" aria-hidden="true"></canvas><span class="asst-fab-tip">Ask Miles</span>
+</button>
+<section class="asst" id="asst" hidden aria-label="Miles, points assistant">
+  <div class="asst-head">
+    <canvas id="asst-bot" aria-hidden="true"></canvas>
+    <div class="asst-id"><b>Miles</b><span id="asst-status">Ask me about your points</span></div>
+    <button class="asst-x" id="asst-x" type="button" aria-label="Close the assistant">&times;</button>
+  </div>
+  <div class="asst-log" id="asst-log" aria-live="polite"></div>
+  <form class="asst-form" id="asst-form">
+    <input id="asst-input" type="text" autocomplete="off" maxlength="800" placeholder="Ask a question…" aria-label="Your question">
+    <button type="submit" id="asst-send">Send</button>
+  </form>
+  <p class="asst-note">AI answers can be wrong. Prices are estimates.</p>
+</section>
 <footer class="foot">Award prices are published-chart estimates ("~" = dynamically priced). Live seats come from seats.aero. Transfer partners and bonuses checked September 2026. Always confirm on the airline's site before transferring points; transfers can't be undone.</footer>
 
 <!-- Globe libraries, pinned to exact versions and loaded as ordinary blocking
@@ -1902,6 +1971,7 @@
      that was the "globe never shows up" failure). jsdelivr first; unpkg only
      if jsdelivr itself is unreachable. -->
 <script src="vendor/thinking-orbs/orbs.js"></script>
+<script src="vendor/bot-avatars/bot.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js" crossorigin="anonymous"></script>
 <script>if(typeof Globe==="undefined"){document.write('<script src="https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js"><\/script>');}</script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" crossorigin="anonymous"></script>
@@ -3922,6 +3992,136 @@ function loadDeals(){
     .then(function(data){ dealsLoaded = true; dealsPending = false; renderDeals(data.items); })
     .catch(function(){ dealsPending = false; renderDeals([]); /* bonuses alone are still useful */ });
 }
+
+/* ===================== ASSISTANT =====================
+   "Miles": a small chat panel that answers simple questions. The browser
+   sends a snapshot of what the app already knows (balances, the routes
+   from the home airport and what each costs this wallet, transfer
+   partners, live bonuses) to /api/assistant, which asks Claude. The
+   avatar is bot-avatars; the wait uses a Thinking Orb. */
+var asst = {open:false, busy:false, history:[], bots:[]};
+function assistantSnapshot(){
+  var wallet = {};
+  PROGRAMS.forEach(function(p){ if(state.enabled[p.id]) wallet[p.name] = state.wallet[p.id]||0; });
+  var routes = routesForOrigin(state.home).map(function(r){
+    var b = planRoute(r, state.cabin).best, ok = !!b && b.status!=="short";
+    // kept compact: free AI tiers count every token
+    var row = {to: r.dest.city+" "+r.destIata, via: b ? BOOK_PROGRAMS[b.opt.program] : null,
+      miles: b ? b.need : r.pricing[state.cabin].minPoints, cpp: Math.round(centsPerPoint(r, state.cabin)*10)/10};
+    if(ok) row.pay = b.steps.map(function(s){ return fmtPts(s.pts)+" "+curName(s.cur); }).join(" + ");
+    else row.shortBy = b ? b.shortBy : null;
+    if(r.isNonstop) row.nonstop = true;
+    return row;
+  });
+  routes.sort(function(a,b){ return (!!b.pay-!!a.pay) || (a.miles-b.miles); });
+  var partners = {};
+  Object.keys(TRANSFERS).forEach(function(prog){
+    Object.keys(TRANSFERS[prog]).forEach(function(cur){
+      if(!state.enabled[cur]) return;             // only the cards they have
+      var k = curName(cur); (partners[k] = partners[k] || []).push((BOOK_PROGRAMS[prog]||prog)+(TRANSFERS[prog][cur]!==1?" ("+TRANSFERS[prog][cur]+":1)":""));
+    });
+  });
+  var now = Date.now();
+  var bonuses = BONUSES.filter(function(b){ return now <= new Date(b.ends+"T23:59:59").getTime(); }).map(function(b){
+    return curName(b.from)+" to "+b.to.map(function(t){ return BOOK_PROGRAMS[t]||t; }).join(", ")+": +"+b.pct+"% until "+b.ends;
+  });
+  return {home: state.home+(AP[state.home] ? " ("+AP[state.home].city+")" : ""), cabin: state.cabin, trip: tripLabel(),
+    balances: wallet, routes: routes.slice(0, 15), routesTotal: routes.length, transferPartners: partners, activeBonuses: bonuses};
+}
+function asstFormat(text){
+  // plain paragraphs, "- " bullets and **bold**; everything escaped first
+  var html = "", list = [];
+  function flush(){ if(list.length){ html += "<ul>"+list.map(function(li){ return "<li>"+li+"</li>"; }).join("")+"</ul>"; list = []; } }
+  escapeHtml(text).split(/\n+/).forEach(function(line){
+    line = line.trim().replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    if(!line) return;
+    var m = line.match(/^(?:[-*•]|\d+[.)])\s+(.*)$/);
+    if(m){ list.push(m[1]); return; }
+    flush(); html += "<p>"+line+"</p>";
+  });
+  flush();
+  return html;
+}
+function asstBots(s){ asst.bots.forEach(function(b){ b.setState(s); }); }
+function asstAdd(role, text, cls){
+  var log = document.getElementById("asst-log");
+  var el = document.createElement("div");
+  el.className = "asst-msg "+(role==="user"?"me":"bot")+(cls?" "+cls:"");
+  if(role==="user") el.textContent = text; else el.innerHTML = asstFormat(text);
+  log.appendChild(el); log.scrollTop = log.scrollHeight;
+}
+function asstHello(){
+  var log = document.getElementById("asst-log");
+  log.innerHTML = '<p class="asst-hello">Hi, I’m Miles. I can see your balances and the trips from '+escapeHtml(state.home)+
+    '. Ask me anything about your points.</p><div class="asst-sugs">'+
+    ["What’s the best trip I can book right now?","Where can my Chase points transfer?","What does cents per point mean?"].map(function(q){
+      return '<button type="button" class="asst-sug">'+escapeHtml(q)+'</button>';
+    }).join("")+'</div>';
+  Array.prototype.forEach.call(log.querySelectorAll(".asst-sug"), function(b){
+    b.addEventListener("click", function(){ asstAsk(b.textContent); });
+  });
+}
+function asstAsk(q){
+  q = (q||"").trim(); if(!q || asst.busy) return;
+  var log = document.getElementById("asst-log");
+  var sugs = log.querySelector(".asst-sugs"); if(sugs) sugs.remove();
+  asst.history.push({role:"user", content:q});
+  asstAdd("user", q);
+  asst.busy = true; document.getElementById("asst-send").disabled = true;
+  document.getElementById("asst-status").textContent = "Thinking…";
+  asstBots("working");
+  var wait = document.createElement("div"); wait.className = "asst-wait";
+  wait.innerHTML = '<canvas data-orb="solving" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Thinking…';
+  log.appendChild(wait); log.scrollTop = log.scrollHeight;
+  if(window.ThinkingOrbs) ThinkingOrbs.scan(wait);
+  track("assistant_ask", {len:q.length});
+  fetch("/api/assistant", {method:"POST", headers:{"content-type":"application/json"},
+    body: JSON.stringify({messages: asst.history.slice(-8), context: assistantSnapshot()})})
+    .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(b){
+      if(!r.ok || !b.reply){ var e = new Error(b.error||r.status); e.code = b.error || (r.status===404?"not_deployed":"error"); throw e; }
+      return b.reply;
+    }); })
+    .then(function(reply){ asst.history.push({role:"assistant", content:reply}); asstAdd("assistant", reply); })
+    .catch(function(err){
+      asst.history.pop();   // the question never got an answer; let it be asked again
+      asstAdd("assistant", err.code==="no_key" || err.code==="not_deployed"
+        ? "I’m not switched on for this site yet. Check back soon."
+        : err.code==="rate_limited" || err.code==="busy"
+        ? "I’ve hit my limit for now. Try again in a minute, or tomorrow if it’s been a busy day."
+        : "Something went wrong on my end. Try asking again.", "err");
+    })
+    .then(function(){
+      wait.remove(); asst.busy = false; document.getElementById("asst-send").disabled = false;
+      document.getElementById("asst-status").textContent = "Ask me about your points";
+      asstBots("default");
+    });
+}
+function asstToggle(open){
+  asst.open = open;
+  var panel = document.getElementById("asst"), fab = document.getElementById("asst-fab");
+  panel.hidden = !open; fab.setAttribute("aria-expanded", open ? "true" : "false");
+  if(open){
+    if(!document.getElementById("asst-log").children.length) asstHello();
+    track("assistant_open");
+    setTimeout(function(){ document.getElementById("asst-input").focus({preventScroll:true}); }, 60);
+  }
+}
+(function(){
+  if(window.BotAvatars){
+    try{
+      asst.bots.push(BotAvatars.mount(document.getElementById("asst-fab-bot"), {type:"clover", size:34}));
+      asst.bots.push(BotAvatars.mount(document.getElementById("asst-bot"), {type:"clover", size:36}));
+    }catch(e){ /* no avatar is fine; the panel still works */ }
+  }
+  document.getElementById("asst-fab").addEventListener("click", function(){ asstToggle(!asst.open); });
+  document.getElementById("asst-x").addEventListener("click", function(){ asstToggle(false); document.getElementById("asst-fab").focus(); });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape" && asst.open) asstToggle(false); });
+  document.getElementById("asst-form").addEventListener("submit", function(e){
+    e.preventDefault();
+    var input = document.getElementById("asst-input");
+    asstAsk(input.value); input.value = "";
+  });
+})();
 
 /* ===================== INIT ===================== */
 
