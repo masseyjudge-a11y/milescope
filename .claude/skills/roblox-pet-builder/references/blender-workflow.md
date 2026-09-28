@@ -12,6 +12,9 @@ which Parts can't. PetKit (Parts) stays as the no-Blender fallback.
 - Orientation: model the pet facing **-Y** in Blender with Z up. The FBX export in
   `scripts/blender_studs.py` converts this to Roblox's forward -Z, Y up. Feet (or hover point) sit at Z = 0.
 - Exec `scripts/blender_studs.py` in Blender once per session to load the helper functions.
+- Any Blender MCP that runs Python works: the local Blender MCP add-on, or a hosted Blender such
+  as Higgsfield 3D Jutsu (Blender 5.2; renders come back as artifacts; files leave only as
+  published images or the .blend/GLB download, so export textures by publishing them).
 
 ## Per pet
 1. **Concept and plan** exactly as in SKILL.md (style.md rules, rarity size, palette, signature feature).
@@ -30,15 +33,17 @@ which Parts can't. PetKit (Parts) stays as the no-Blender fallback.
 5. **Glow parts** go in **separate objects named `*_Glow`** (glow strips, flame blades, glowing eyes,
    halo). They stay studless and get the Neon material in Roblox, so mutations just recolour them.
 6. **Eyes**: separate small objects (rim, iris, pupil, highlight disc), studless.
-7. **Studs (required)**:
-   - UV-unwrap the body (Smart UV Project, island margin 0.02).
-   - `hi = make_studded_copy(body)`: a copy covered in real square studs (0.38 wide, 1-stud pitch,
-     sparse, like the references).
-   - `bake_studs(low=body, high=hi, size=2048)` bakes `<Body>_normal.png` (OpenGL tangent) and
-     `<Body>_ao.png`.
-   - Bake the colour too: set bake type DIFFUSE (colour only) onto a `<Body>_color.png`, then multiply
-     the AO into it. For recolourable variants, also keep a colour-free version (see Variants).
+7. **Studs (required)**, grid method (tested in Blender 5.2, matches the references):
+   - `unwrap_for_studs(body)`: facet-aligned UV islands at one shared scale.
+   - `apply_stud_material(body)`: puts the stud tile (square studs, 1 per stud of world size) into
+     every material's Normal input, so viewport renders already show the studs.
+   - `bake_stud_normal(body, size=2048)` → `<Body>_normal.png`, the studs baked onto the body's
+     own UVs for Roblox (OpenGL tangent, as Roblox expects).
+   - Bake the colour too: bake type DIFFUSE (colour only) into `<Body>_color.png`.
+     For recolourable variants, also keep a colour-free version (see Variants).
    - Studs go on every non-glow, non-eye surface, including fins and wings.
+   - Alternative: `make_studded_copy` + `bake_studs` builds real 3D studs and bakes them, but the
+     studs are scattered, not in rows, so it looks less like the references.
 8. **Check before export**: take viewport screenshots through MCP (3/4 front, side, front, top) next
    to `PlayerScale`, with the studded high-poly visible, and compare against `references/examples/`.
    Critique silhouette, facets, stud density, colour balance and the signature feature. Iterate.

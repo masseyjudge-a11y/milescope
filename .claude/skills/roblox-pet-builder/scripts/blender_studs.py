@@ -1,16 +1,25 @@
 """Blender helper for the house pet style: studs + baking + export.
 
-Run inside Blender (via Blender MCP `execute_blender_code`, or Blender's Text Editor).
-Paste/exec this file first, then call the functions. Written for Blender 4.x.
-Not yet verified inside Blender: check each step with a viewport screenshot.
+Run inside Blender (any Blender MCP's Python/exec tool, or Blender's Text Editor).
+Exec this file first, then call the functions.
 
-Typical use:
-    body = bpy.data.objects["Koi_Body"]            # smooth, faceted low-poly body you modelled
-    hi = make_studded_copy(body)                     # high-poly copy with real square studs
-    bake_studs(low=body, high=hi, size=2048)         # -> <name>_normal.png, <name>_ao.png
-    export_fbx([body, *glow_parts], "Koi")           # -> Koi.fbx next to the .blend
+Tested 2026-09-28 in Blender 5.2 (Higgsfield 3D Jutsu cloud Blender): make_stud_tile,
+apply_stud_material, bake_stud_normal, make_studded_copy and bake_studs all ran and the
+renders matched the reference studs. export_fbx has not been run yet.
+
+Default (grid studs, matches the references: neat rows of square studs on every facet):
+    body = bpy.data.objects["Koi_Body"]   # faceted body, one material per palette role
+    unwrap_for_studs(body)                # facet-aligned UVs at uniform scale
+    apply_stud_material(body)             # tiled stud normal map in every material (live preview)
+    bake_stud_normal(body, size=2048)     # -> <name>_normal.png on the body's own UVs (for Roblox)
+    export_fbx([body, *glow_parts], "Koi")
+
+Alternative (real 3D studs, scattered, not in rows): make_studded_copy + bake_studs.
 """
+import math
 import os
+
+import numpy as np
 
 import bpy
 
@@ -24,6 +33,104 @@ def _out_dir():
     d = bpy.path.abspath("//") or os.path.expanduser("~")
     os.makedirs(d, exist_ok=True)
     return d
+
+
+def make_stud_tile(name="StudTile", n=256, stud=STUD_SIZE, bevel=0.07, strength=2.2):
+    """One stud cell as an OpenGL tangent normal map, generated in Blender (no files needed)."""
+    c = (np.arange(n) + 0.5) / n - 0.5
+    X, Y = np.meshgrid(c, c)
+    d = np.maximum(abs(X), abs(Y))
+    h = np.clip((stud / 2 - d) / bevel, 0, 1)
+    h = h * h * (3 - 2 * h)
+    gy, gx = np.gradient(h, 1.0 / n)  # Blender image rows run bottom-up, so rows = +V
+    s = strength * bevel
+    nx, ny, nz = -gx * s, -gy * s, np.ones_like(h)
+    ln = np.sqrt(nx * nx + ny * ny + nz * nz)
+    rgba = np.stack([nx / ln * 0.5 + 0.5, ny / ln * 0.5 + 0.5, nz / ln * 0.5 + 0.5, np.ones_like(h)], -1)
+    img = bpy.data.images.get(name) or bpy.data.images.new(name, n, n, alpha=False)
+    img.colorspace_settings.name = "Non-Color"
+    img.pixels.foreach_set(rgba.astype(np.float32).ravel())
+    return img
+
+
+def unwrap_for_studs(obj, angle=5):
+    """Facet-aligned UV islands at one shared scale, so stud rows follow each facet."""
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.uv.smart_project(angle_limit=math.radians(angle), island_margin=0.01)
+    bpy.ops.uv.average_islands_scale()
+    bpy.ops.object.mode_set(mode="OBJECT")
+
+
+def uv_studs_per_unit(obj):
+    """How many world units one UV unit spans (so the tile repeats once per stud)."""
+    me = obj.data
+    uv = me.uv_layers.active.data
+    a3 = sum(p.area for p in me.polygons)
+    a2 = 0.0
+    for p in me.polygons:
+        pts = [uv[i].uv for i in p.loop_indices]
+        a2 += abs(sum(pts[i].x * pts[i - 1].y - pts[i - 1].x * pts[i].y for i in range(len(pts)))) / 2
+    return math.sqrt(a3 / a2)
+
+
+def apply_stud_material(obj, pitch=STUD_PITCH):
+    """Wire the stud tile into the Normal input of every material on obj (1 stud per `pitch` units)."""
+    tile = make_stud_tile()
+    k = uv_studs_per_unit(obj) / pitch
+    for slot in obj.material_slots:
+        mat = slot.material
+        mat.use_nodes = True
+        nt = mat.node_tree
+        N = nt.nodes
+        bsdf = next(n for n in N if n.type == "BSDF_PRINCIPLED")
+        tc = N.new("ShaderNodeTexCoord")
+        mp = N.new("ShaderNodeMapping")
+        mp.name = "StudMapping"
+        mp.inputs["Scale"].default_value = (k, k, 1)
+        tex = N.new("ShaderNodeTexImage")
+        tex.name = "StudTile"
+        tex.image = tile
+        nm = N.new("ShaderNodeNormalMap")
+        nt.links.new(tc.outputs["UV"], mp.inputs["Vector"])
+        nt.links.new(mp.outputs["Vector"], tex.inputs["Vector"])
+        nt.links.new(tex.outputs["Color"], nm.inputs["Color"])
+        nt.links.new(nm.outputs["Normal"], bsdf.inputs["Normal"])
+    return k
+
+
+def bake_stud_normal(obj, size=2048):
+    """Bake the tiled studs into one normal map on obj's own UVs: what Roblox's
+    SurfaceAppearance.NormalMap needs. Saves <name>_normal.png."""
+    scene = bpy.context.scene
+    scene.render.engine = "CYCLES"
+    scene.cycles.samples = 1
+    bake = scene.render.bake
+    bake.use_selected_to_active = False
+    bake.margin = 4
+    bake.normal_space = "TANGENT"
+    bake.normal_g = "POS_Y"
+    img = _bake_image(obj.name + "_normal", size)
+    img.colorspace_settings.name = "Non-Color"
+    for slot in obj.material_slots:
+        _target_node_in(slot.material, img)
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.bake(type="NORMAL")
+    img.save()
+    return img.filepath_raw
+
+
+def _target_node_in(mat, img):
+    N = mat.node_tree.nodes
+    node = N.get("BakeTarget") or N.new("ShaderNodeTexImage")
+    node.name = "BakeTarget"
+    node.image = img
+    N.active = node
 
 
 def make_studded_copy(obj, pitch=STUD_PITCH, size=STUD_SIZE, height=STUD_HEIGHT):
