@@ -1431,6 +1431,29 @@
   #onboarding .ob-scrim{transition:opacity 1.6s ease .5s,background .8s var(--e-expo),backdrop-filter .8s ease}
 
   .deals-note{font-size:12px !important;color:var(--text-3) !important;margin:0 0 14px !important;padding-left:10px;border-left:2px solid var(--accent-line)}
+
+  /* ---- performance ---- */
+  /* the grain reads the same standing still, and a moving blend layer
+     recomposites the whole screen three times a second */
+  .ob-grain{animation:none}
+
+  /* Phones and tablets: every live blur, blend and drifting glow sits on top
+     of a 3D globe that redraws every frame, which is what makes Safari
+     stutter. Same look, drawn once: solid glass instead of frosted, still
+     glows, and a light blur kept only on the two bars that float over content. */
+  @media (hover:none) and (pointer:coarse){
+    :root{--glass:rgba(14,19,32,.9);--glass-strong:rgba(12,16,28,.96)}
+    *,*::before,*::after,::backdrop{-webkit-backdrop-filter:none !important;backdrop-filter:none !important}
+    .topbar,.mobiletabs{-webkit-backdrop-filter:blur(12px) !important;backdrop-filter:blur(12px) !important}
+    dialog::backdrop{background:rgba(2,4,10,.72)}
+    .ob-blob,.ambient i{animation:none !important}
+    .ambient i{filter:none}
+    .ambient,.ob-grain,.ob-card::before{mix-blend-mode:normal}
+    .ob-grain{display:none}
+    .wallet-col::after,.routes-col::after,.topbar::after,.strip::after,dialog::after,.best-pick::after{display:none}
+    /* dimming the globe with opacity costs nothing; a CSS filter re-runs on every frame */
+    #onboarding.mode-gs .ob-globe,#onboarding.mode-setup .ob-globe{filter:none;opacity:.6}
+  }
 </style>
 </head>
 <body>
@@ -2842,6 +2865,12 @@ function resolveGlobeTextures(){
    handoff invisible, the camera is copied across, and there is nothing
    about the planet itself to give the switch away. */
 function applyGlobeSkin(g){
+  // phones: 1.5x instead of the library's 2x, about 44% fewer pixels per frame
+  try{
+    if(matchMedia("(pointer:coarse)").matches && Math.min(screen.width, screen.height) <= 500){
+      g.renderer().setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
+    }
+  }catch(e){}
   g.backgroundColor("rgba(0,0,0,0)")
    .showAtmosphere(true).atmosphereColor("#FFD9B5").atmosphereAltitude(0.16);
   var mat = g.globeMaterial();
@@ -2885,7 +2914,23 @@ function updateGlobeSize(){
   if(!World) return;
   var rect = mapStage.getBoundingClientRect();
   if(rect.width>40 && rect.height>40){ World.width(rect.width).height(rect.height); }
+  syncWorldAnimation();
 }
+/* The map globe stops drawing while nobody can see it: under the onboarding
+   overlay (the hero globe is doing the work there), on a phone tab that hides
+   the map, or in a background tab. */
+var worldRunning = true;
+function syncWorldAnimation(){
+  if(!World || !World.pauseAnimation) return;
+  var ob = document.getElementById("onboarding");
+  var covered = ob && !ob.hidden && !ob.classList.contains("handing-off");
+  var rect = mapStage.getBoundingClientRect();
+  var run = !covered && rect.width>40 && rect.height>40 && document.visibilityState!=="hidden";
+  if(run===worldRunning) return;
+  worldRunning = run;
+  if(run) World.resumeAnimation(); else World.pauseAnimation();
+}
+document.addEventListener("visibilitychange", syncWorldAnimation);
 var resizeTimer = null;
 window.addEventListener("resize", function(){
   clearTimeout(resizeTimer);
@@ -3010,6 +3055,7 @@ function initGlobe(){
 
     var origin = AP[state.home];
     World.pointOfView({lat:origin.lat, lng:origin.lng, altitude:2.1}, 0);
+    syncWorldAnimation();
     globeReady = true;
     window.__msWorld = World;
     if(window.MSGlobeGlass) window.MSGlobeGlass(World, document.querySelector(".globe-stage"), "lg-globe");
@@ -4033,12 +4079,16 @@ function buildPlanes(){
     heroPlanes.push({el:el, a:toVec(r[0][0],r[0][1]), b:toVec(r[1][0],r[1][1]),
       t:(i*0.137)%1, speed:0.000035 + (i%3)*0.000008});
   });
-  requestAnimationFrame(flyPlanes);
+  startPlanes();
 }
-var lastTs = 0;
+var lastTs = 0, planesRaf = 0;
+function startPlanes(){
+  if(!planesRaf && heroPlanes.length){ lastTs = 0; planesRaf = requestAnimationFrame(flyPlanes); }
+}
 function flyPlanes(ts){
-  requestAnimationFrame(flyPlanes);
-  if(!HeroGlobe || !heroReady || !heroLive || root.hidden) return;
+  if(!heroLive || root.hidden){ planesRaf = 0; return; }
+  planesRaf = requestAnimationFrame(flyPlanes);
+  if(!HeroGlobe || !heroReady) return;
   var dt = lastTs ? Math.min(ts-lastTs, 64) : 16; lastTs = ts;
   var pov = HeroGlobe.pointOfView(), camV = toVec(pov.lat, pov.lng);
   for(var i=0;i<heroPlanes.length;i++){
@@ -4078,6 +4128,7 @@ function handOff(){
     }, reduced ? 0 : 180);
   }
   root.classList.add("handing-off");
+  if(typeof syncWorldAnimation==="function") syncWorldAnimation();
   window.setTimeout(function(){
     heroLive = false;
     if(HeroGlobe && HeroGlobe.pauseAnimation) HeroGlobe.pauseAnimation();
@@ -4428,7 +4479,10 @@ function openOnboarding(){
   wireOnboarding();
   root.hidden = false;
   heroLive = true;
+  root.classList.remove("handing-off");
   if(HeroGlobe && HeroGlobe.resumeAnimation) HeroGlobe.resumeAnimation();
+  startPlanes();
+  if(typeof syncWorldAnimation==="function") syncWorldAnimation();
   setMode("landing");
   window.setTimeout(sizeHeroGlobe, 80);   // the stage was display:none until now
 }
