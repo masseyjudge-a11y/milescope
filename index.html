@@ -728,19 +728,29 @@
   .pick-tilt{display:block;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
     transition:transform .4s var(--e-quint)}
   .pick.tracking .pick-tilt{transition:transform .08s linear}
-  .pick:hover .pick-lift{transform:translateY(calc(-9 * var(--u)))}
+  /* hover: lift and a touch of scale, plus cues that don't rely on motion
+     (so they still show with Reduce Motion on): a glow in the card's own
+     color, the selection ring at half strength, a brighter caption */
+  .pick:hover .pick-lift,.pick:focus-visible .pick-lift{transform:translateY(calc(-10 * var(--u))) scale(1.025)}
+  .pick:hover .ob-card,.pick:focus-visible .ob-card{
+    box-shadow:0 calc(26 * var(--u)) calc(52 * var(--u)) calc(-16 * var(--u)) color-mix(in oklab, var(--glow) 55%, transparent),
+               0 calc(4 * var(--u)) calc(14 * var(--u)) rgba(0,0,0,.5) !important}
+  .pick:hover .pick-ring,.pick:focus-visible .pick-ring{opacity:.5;transform:scale(1)}
+  .pick:hover .pick-prog,.pick:focus-visible .pick-prog{color:var(--text-2)}
+  .pick:hover .pick-prog i,.pick:focus-visible .pick-prog i{background:var(--glow)}
+  .pick:focus-visible{outline:none}
   .pick:active .pick-lift{transform:translateY(calc(-3 * var(--u))) scale(.985)}
-  .pick[aria-pressed="true"] .pick-lift{transform:translateY(calc(-13 * var(--u)))}
+  .pick[aria-pressed="true"] .pick-lift,.pick[aria-pressed="true"]:hover .pick-lift{transform:translateY(calc(-13 * var(--u))) scale(1.025)}
   .pick[aria-pressed="true"] .ob-card{
     box-shadow:0 calc(28 * var(--u)) calc(56 * var(--u)) calc(-18 * var(--u)) color-mix(in oklab, var(--glow) 62%, transparent),
                0 calc(4 * var(--u)) calc(14 * var(--u)) rgba(0,0,0,.5)}
   .pick.pop .pick-lift{animation:ob-pop .48s var(--e-spring)}
   @keyframes ob-pop{0%{transform:translateY(calc(-2 * var(--u))) scale(.96)}
-    58%{transform:translateY(calc(-17 * var(--u))) scale(1.03)}100%{transform:translateY(calc(-13 * var(--u))) scale(1)}}
+    58%{transform:translateY(calc(-17 * var(--u))) scale(1.05)}100%{transform:translateY(calc(-13 * var(--u))) scale(1.025)}}
   .pick-ring{position:absolute;inset:calc(-5 * var(--u));border-radius:calc(19 * var(--u));
     border:calc(2 * var(--u)) solid var(--glow);opacity:0;transform:scale(1.04);pointer-events:none;
     transition:opacity .26s ease,transform .36s var(--e-spring)}
-  .pick[aria-pressed="true"] .pick-ring{opacity:1;transform:scale(1)}
+  .pick[aria-pressed="true"] .pick-ring,.pick[aria-pressed="true"]:hover .pick-ring{opacity:1;transform:scale(1)}
   .pick-check{position:absolute;top:calc(-9 * var(--u));right:calc(-9 * var(--u));
     width:calc(29 * var(--u));height:calc(29 * var(--u));border-radius:50%;background:var(--glow);color:#04131F;
     display:flex;align-items:center;justify-content:center;font-size:calc(14 * var(--u));font-weight:700;
@@ -784,14 +794,21 @@
      drawn face behind it so nothing doubles up or peeks around the edges */
   .ob-card.has-art{background:none;box-shadow:none}
   .ob-card.has-art::before,.ob-card.has-art .ob-card-print{display:none}
+  /* trimmed (or already flush) art is the card's exact shape: fill the
+     rounded frame and keep the drop shadow the drawn face had */
+  .ob-card.has-art.flush{box-shadow:0 calc(20 * var(--u)) calc(44 * var(--u)) calc(-16 * var(--u)) rgba(0,0,0,.75)}
+  .ob-card.flush .ob-card-art{object-fit:cover}
   /* with the drawn face gone, the caption carries the card's name */
   .pick-name{display:none;margin-top:calc(12 * var(--u));font-size:calc(13.5 * var(--u));font-weight:600;color:var(--text-1);text-align:left}
   .pick:has(.has-art) .pick-name{display:block}
   .pick:has(.has-art) .pick-prog{margin-top:calc(4 * var(--u))}
-  .ob-card-sheen{position:absolute;inset:0;opacity:0;transition:opacity .3s ease;
-    background:radial-gradient(closest-side circle at var(--mx,50%) var(--my,50%),
-      rgba(255,255,255,.32),rgba(255,255,255,.06) 55%,transparent 78%)}
-  .pick:hover .ob-card-sheen{opacity:1}
+  /* hover glare: a diagonal band of light that sweeps across the card once
+     (with Reduce Motion it just appears, parked mid-card) */
+  .ob-card-sheen{position:absolute;inset:0;opacity:0;pointer-events:none;
+    background:linear-gradient(112deg,transparent 34%,rgba(255,255,255,.07) 42%,rgba(255,255,255,.26) 50%,rgba(255,255,255,.07) 58%,transparent 66%)
+      no-repeat;background-size:260% 100%;background-position:100% 0;
+    transition:opacity .25s ease,background-position .9s var(--e-quint)}
+  .pick:hover .ob-card-sheen,.pick:focus-visible .ob-card-sheen{opacity:1;background-position:22% 0}
   .ob-card-print{position:absolute;inset:0;padding:calc(15 * var(--u));display:flex;flex-direction:column;justify-content:space-between}
   .ob-card-row{display:flex;align-items:flex-start;justify-content:space-between;gap:calc(8 * var(--u))}
   .ob-card-chip{width:calc(31 * var(--u));height:calc(23 * var(--u));display:block;opacity:.92}
@@ -3926,13 +3943,13 @@ loadLiveBonuses();
 "use strict";
 
 var ONBOARD_CARDS = [
-  {id:"csr",          name:"Chase Sapphire Reserve",   program:"chase_ur", net:"VISA INFINITE",  tag:"Premium travel",       tint:["#16437E","#071A34"], art:"https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire_reserve_card_Halo.png"},
-  {id:"csp",          name:"Chase Sapphire Preferred", program:"chase_ur", net:"VISA SIGNATURE", tag:"Everyday travel",      tint:["#2170CC","#0B2E60"], art:"https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire-preferredcard2026.png"},
-  {id:"amex_plat",    name:"Amex Platinum",            program:"amex_mr",  net:"AMEX",           tag:"Lounges and credits",  tint:["#8D949D","#2B3036"], art:"https://www.aexp-static.com/online/myca/shared/summary/cardasset/images/NUS000000363_480x304_STRAIGHT_96.png"},
-  {id:"amex_gold",    name:"Amex Gold",                program:"amex_mr",  net:"AMEX",           tag:"Dining and groceries", tint:["#C89A3F","#6B4A14"], art:"https://www.aexp-static.com/online/myca/shared/summary/cardasset/images/NUS000000174_480x304_STRAIGHT_96.png"},
-  {id:"venture_x",    name:"Capital One Venture X",    program:"capone",   net:"VISA INFINITE",  tag:"Flat-rate travel",     tint:["#14584A","#06201C"], art:"https://ecm.capitalone.com/WCM/card/products/venturex-cg-static-card-1000x630-2.png"},
-  {id:"bilt",         name:"Bilt Mastercard",          program:"bilt",     net:"MASTERCARD",     tag:"Points on rent",       tint:["#2E2A26","#0D0B09"], art:"https://static.biltrewards.com/assets/wallet/bilt-tahoe.png"},
-  {id:"citi_premier", name:"Citi Strata Premier",      program:"citi_typ", net:"MASTERCARD",     tag:"Bonus categories",     tint:["#24405E","#0A1726"], art:"https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-premier-credit-card/citi-strata-premier-credit-card_306x192.webp"}
+  {id:"csr",          name:"Chase Sapphire Reserve",   program:"chase_ur", net:"VISA INFINITE",  tag:"Premium travel",       tint:["#16437E","#071A34"], art:true},
+  {id:"csp",          name:"Chase Sapphire Preferred", program:"chase_ur", net:"VISA SIGNATURE", tag:"Everyday travel",      tint:["#2170CC","#0B2E60"], art:true},
+  {id:"amex_plat",    name:"Amex Platinum",            program:"amex_mr",  net:"AMEX",           tag:"Lounges and credits",  tint:["#8D949D","#2B3036"], art:true},
+  {id:"amex_gold",    name:"Amex Gold",                program:"amex_mr",  net:"AMEX",           tag:"Dining and groceries", tint:["#C89A3F","#6B4A14"], art:true},
+  {id:"venture_x",    name:"Capital One Venture X",    program:"capone",   net:"VISA INFINITE",  tag:"Flat-rate travel",     tint:["#14584A","#06201C"], art:true},
+  {id:"bilt",         name:"Bilt Mastercard",          program:"bilt",     net:"MASTERCARD",     tag:"Points on rent",       tint:["#2E2A26","#0D0B09"], art:true},
+  {id:"citi_premier", name:"Citi Strata Premier",      program:"citi_typ", net:"MASTERCARD",     tag:"Bonus categories",     tint:["#24405E","#0A1726"], art:true}
 ];
 /* Official program names, with each airline's own site icon (self-hosted in /logos). */
 var MARQUEE = [
@@ -3965,7 +3982,7 @@ var RAD     = Math.PI/180;
 function glowOf(c){ var p = PMAP[c.program]; return (p && p.color) || "#38BDF8"; }
 function cardFace(c){
   return '<div class="ob-card" style="--t0:'+c.tint[0]+';--t1:'+c.tint[1]+';--glow:'+glowOf(c)+'">'+
-    (c.art ? '<img class="ob-card-art" alt="" src="'+c.art+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '')+
+    (c.art ? '<img class="ob-card-art" alt="" src="/api/card-art?id='+c.id+'" loading="lazy" decoding="async">' : '')+
     '<span class="ob-card-sheen" aria-hidden="true"></span>'+
     '<div class="ob-card-print"><div class="ob-card-row">'+
       '<svg class="ob-card-chip" viewBox="0 0 40 30" aria-hidden="true">'+
@@ -3976,14 +3993,79 @@ function cardFace(c){
       '<div><div class="ob-card-name">'+c.name+'</div><div class="ob-card-tag">'+c.tag+'</div></div>'+
     '</div></div>';
 }
+/* Issuer art often arrives with the card sitting inside a white or
+   transparent margin, sometimes with a baked-in shadow or glow; shown as is,
+   that margin reads as a frame around the card. Clear everything connected
+   to the image edge that is see-through or near-white, then crop to what's
+   left. Works because /api/card-art serves the art same-origin, so the
+   canvas can be read back. Returns the trimmed image as a data URL, "" when
+   the art is already flush, or null (keep the original, shown whole) when
+   the result doesn't look like a card. */
+function trimCardArt(img){
+  try{
+    var W = img.naturalWidth, H = img.naturalHeight;
+    if(!W || !H) return null;
+    var k = Math.min(1, 960 / W), w = Math.round(W*k), h = Math.round(H*k);
+    var c = document.createElement("canvas"); c.width = w; c.height = h;
+    var x = c.getContext("2d"); x.drawImage(img, 0, 0, w, h);
+    var d = x.getImageData(0, 0, w, h), p = d.data, n = w*h;
+    var clear = function(i){ return p[i*4+3] < 200; };                // transparent, shadow, glow
+    var white = function(i){ var o = i*4; return p[o] > 246 && p[o+1] > 246 && p[o+2] > 246; };
+    var edge = [], i, px, py;
+    for(i=0;i<w;i++){ edge.push(i, (h-1)*w + i); }
+    for(i=1;i<h-1;i++){ edge.push(i*w, i*w + w - 1); }
+    // treat white as margin only when the image is framed in it all round;
+    // otherwise a light card (Platinum) touching the edge would get eaten
+    var framed = 0;
+    for(i=0;i<edge.length;i++){ if(clear(edge[i]) || white(edge[i])) framed++; }
+    var whiteMargin = framed > edge.length * .92;
+    var bg = function(i){ return clear(i) || (whiteMargin && white(i)); };
+    var gone = new Uint8Array(n), stack = edge.slice(), cleared = 0;
+    while(stack.length){
+      i = stack.pop();
+      if(gone[i] || !bg(i)) continue;
+      gone[i] = 1; p[i*4+3] = 0; cleared++;
+      px = i % w; py = (i - px) / w;
+      if(px > 0) stack.push(i-1); if(px < w-1) stack.push(i+1);
+      if(py > 0) stack.push(i-w); if(py < h-1) stack.push(i+w);
+    }
+    // one pass over the anti-aliased rim: pale pixels touching the cleared
+    // margin are half margin, so fade them instead of leaving a light line
+    if(whiteMargin) for(py=1;py<h-1;py++) for(px=1;px<w-1;px++){
+      i = py*w + px;
+      if(gone[i] || !(gone[i-1] || gone[i+1] || gone[i-w] || gone[i+w])) continue;
+      var o = i*4, lo = Math.min(p[o], p[o+1], p[o+2]);
+      if(lo > 200) p[o+3] = Math.round(p[o+3] * (255 - lo) / 55);
+    }
+    if(!cleared) return "";                         // already flush to the edges
+    if(cleared > n*.6) return null;                 // ate into the card itself
+    var x0 = w, y0 = h, x1 = -1, y1 = -1;
+    for(py=0;py<h;py++) for(px=0;px<w;px++){
+      if(!gone[py*w+px]){ if(px<x0)x0=px; if(px>x1)x1=px; if(py<y0)y0=py; if(py>y1)y1=py; }
+    }
+    var cw = x1-x0+1, ch = y1-y0+1, r = cw/ch;
+    if(cw < w*.5 || r < 1.4 || r > 1.8) return null; // not card-shaped
+    x.putImageData(d, 0, 0);
+    var out = document.createElement("canvas"); out.width = cw; out.height = ch;
+    out.getContext("2d").drawImage(c, x0, y0, cw, ch, 0, 0, cw, ch);
+    return out.toDataURL("image/png");
+  }catch(e){ return null; }
+}
 function wireArt(scope){
   Array.prototype.forEach.call(scope.querySelectorAll(".ob-card-art"), function(img){
-    function ready(){ img.classList.add("ready"); img.parentNode.classList.add("has-art"); }
-    if(img.complete && img.naturalWidth) ready();
-    else{
-      img.addEventListener("load", ready);
-      img.addEventListener("error", function(){ img.remove(); });
+    var checked = false;
+    function ready(){
+      if(!checked){
+        checked = true;
+        var url = trimCardArt(img);
+        if(url !== null) img.parentNode.classList.add("flush");   // card fills the frame: fill it
+        if(url){ img.src = url; return; }                        // shows on the next load
+      }
+      img.classList.add("ready"); img.parentNode.classList.add("has-art");
     }
+    img.addEventListener("load", ready);
+    img.addEventListener("error", function(){ img.remove(); });
+    if(img.complete && img.naturalWidth) ready();
   });
 }
 
