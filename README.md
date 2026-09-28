@@ -23,7 +23,14 @@ book it through, and exactly which points to transfer.
    free tier, model `openai/gpt-oss-120b`, override with `GROQ_MODEL`). Or add
    `ANTHROPIC_API_KEY` to use Claude instead (paid per question; used only when
    there's no Groq key). Without either, the panel says it isn't switched on yet.
-4. Every push to `main` redeploys.
+4. Optional: accounts (save wallet, cards, trips and home airport across
+   devices) with Supabase. Create a project at supabase.com, run
+   `supabase/schema.sql` in its SQL Editor, then add `SUPABASE_URL` and
+   `SUPABASE_ANON_KEY` (Project Settings → API) in Vercel. In Supabase →
+   Authentication → URL Configuration, set the Site URL to the live site so
+   confirmation and password-reset links come back here. Without these the
+   Sign in button stays hidden and everything is saved on the device only.
+5. Every push to `main` redeploys.
 
 ## Keeping the data current
 

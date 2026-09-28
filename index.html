@@ -391,7 +391,7 @@
 
   .field{margin-bottom:12px}
   .field label{display:block;font-size:12px;color:var(--text-2);margin-bottom:5px}
-  .field input[type=text],.field input[type=password],.field input[type=search]{
+  .field input[type=text],.field input[type=password],.field input[type=search],.field input[type=email]{
     width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:var(--radius-s);
     background:var(--fill-1);color:var(--text-1);
   }
@@ -1469,6 +1469,19 @@
 
   .deals-note{font-size:12px !important;color:var(--text-3) !important;margin:0 0 14px !important;padding-left:10px;border-left:2px solid var(--accent-line)}
 
+  /* ---- accounts ---- */
+  .acct-btn{display:inline-flex;align-items:center;gap:6px}
+  .acct-btn[hidden]{display:none}
+  .acct-dot{width:7px;height:7px;border-radius:50%;background:var(--text-4);flex:none}
+  .acct-btn.on .acct-dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .acct-form .field{margin-top:12px}
+  .acct-msg{min-height:18px;margin:10px 0 0;font-size:13px;color:var(--text-2)}
+  .acct-msg.err{color:#FCA5A5}
+  .acct-msg.ok{color:var(--ok)}
+  .acct-actions{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+  .acct-switch{margin:14px 0 0;font-size:13px;color:var(--text-3)}
+  .acct-link{font:inherit;color:var(--accent-strong);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
+
   /* ---- assistant ---- */
   .asst-fab{position:fixed;z-index:60;right:calc(var(--list-w) + 28px);bottom:22px;width:58px;height:58px;border-radius:50%;
     display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;
@@ -1744,6 +1757,7 @@
     <a class="nav-cs" href="case-study.html">Case study</a>
   </nav>
   <button class="home-pill" id="home-pill-btn" type="button" aria-label="Change home airport"><svg class="ico"><use href="#i-pin"/></svg><span id="home-pill-text">SEA · Seattle</span><svg class="ico sm"><use href="#i-chev"/></svg></button>
+  <button class="btn ghost small acct-btn" id="btn-account" type="button" hidden><span class="acct-dot" aria-hidden="true"></span><span id="btn-account-text">Sign in</span></button>
   <button class="icon-btn" id="btn-settings" type="button" aria-label="Settings"><svg class="ico"><use href="#i-sliders"/></svg></button>
   <button class="icon-btn" id="btn-help" type="button" aria-label="How this tool works"><svg class="ico"><use href="#i-help"/></svg></button>
   <span class="disclaimer">Estimates for planning only. Confirm terms before transferring</span>
@@ -1933,6 +1947,34 @@
     <p>Prices are typical award prices, updated September 2026. A "~" means the airline changes prices often. Check real seats before you move points.</p>
   </div>
   <div class="dlg-foot"><button class="btn primary" data-close="dlg-help" type="button">Got it</button></div>
+</dialog>
+
+<dialog id="dlg-account" aria-labelledby="dlg-account-title">
+  <div class="dlg-head"><h2 id="dlg-account-title">Sign in</h2>
+    <button class="btn ghost small" data-close="dlg-account" type="button" aria-label="Close"><svg class="ico"><use href="#i-x"/></svg></button>
+  </div>
+  <form class="dlg-body acct-form" id="acct-form" novalidate>
+    <p class="hint" id="acct-intro">Save your cards, balances and trips, and pick up where you left off on any device. Optional: everything works without an account.</p>
+    <div class="field" id="acct-email-field">
+      <label for="acct-email">Email</label>
+      <input type="email" id="acct-email" autocomplete="email" required>
+    </div>
+    <div class="field" id="acct-pass-field">
+      <label for="acct-pass">Password</label>
+      <input type="password" id="acct-pass" autocomplete="current-password" minlength="8" required>
+    </div>
+    <p class="acct-msg" id="acct-msg" role="status" aria-live="polite"></p>
+    <div class="acct-actions">
+      <button class="btn primary" id="acct-submit" type="submit">Sign in</button>
+      <button class="btn ghost small" id="acct-forgot" type="button">Forgot password?</button>
+    </div>
+    <p class="acct-switch" id="acct-switch-wrap"><span id="acct-switch-q">New here?</span> <button type="button" class="acct-link" id="acct-switch">Create an account</button></p>
+  </form>
+  <div class="dlg-body acct-signed" id="acct-signed" hidden>
+    <p>Signed in as <b id="acct-who"></b>.</p>
+    <p class="hint" id="acct-sync">Your cards, balances, trips and home airport save to your account automatically.</p>
+    <div class="acct-actions"><button class="btn ghost small" id="acct-signout" type="button">Sign out</button></div>
+  </div>
 </dialog>
 
 <dialog id="dlg-settings" aria-labelledby="dlg-settings-title">
@@ -2536,6 +2578,7 @@ function loadPersisted(){
 }
 function persist(){
   try{ localStorage.setItem("pre_wallet_v2", JSON.stringify({wallet:state.wallet, enabled:state.enabled})); }catch(e){}
+  if(window.MSAccount) MSAccount.changed();
 }
 
 /* seats.aero key lives in its own storage slot, separate from the wallet
@@ -2622,7 +2665,7 @@ function renderComboMatches(matches){
 function chooseAirport(iata){
   if(!AP[iata]) return;
   dlgHome.close();
-  (window.MSFade || function(fn){ fn(); })(function(){ state.home = iata; renderHomePill(); syncUrl(); renderAll(); });
+  (window.MSFade || function(fn){ fn(); })(function(){ state.home = iata; renderHomePill(); syncUrl(); renderAll(); if(window.MSAccount) MSAccount.changed(); });
 }
 document.getElementById("home-pill-btn").addEventListener("click",function(){
   homeInput.value=""; renderComboMatches(AIRPORTS.slice(0,12));
@@ -3514,7 +3557,7 @@ var trips = [];
 try{ trips = JSON.parse(localStorage.getItem(TRIPS_KEY) || "[]") || []; }catch(e){ trips = []; }
 function tripId(r, cabin){ return r.originIata+"|"+r.destIata+"|"+cabin; }
 function isSaved(r, cabin){ return trips.some(function(t){ return t.id===tripId(r, cabin); }); }
-function saveTrips(){ try{ localStorage.setItem(TRIPS_KEY, JSON.stringify(trips)); }catch(e){} }
+function saveTrips(){ try{ localStorage.setItem(TRIPS_KEY, JSON.stringify(trips)); }catch(e){} if(window.MSAccount) MSAccount.changed(); }
 function toggleTrip(r, cabin){
   var id = tripId(r, cabin);
   if(isSaved(r, cabin)){
@@ -4007,6 +4050,119 @@ function loadDeals(){
     .then(function(data){ dealsLoaded = true; dealsPending = false; renderDeals(data.items); })
     .catch(function(){ dealsPending = false; renderDeals([]); /* bonuses alone are still useful */ });
 }
+
+/* ===================== ACCOUNTS (Supabase) =====================
+   Optional sign-in with email and password. The app still keeps everything
+   in this browser; an account adds a copy in Supabase (one row per user,
+   protected by row-level security, see supabase/schema.sql) so the wallet,
+   cards, trips and home airport follow you to other devices. The seats.aero
+   key stays on the device on purpose. Switched on by SUPABASE_URL and
+   SUPABASE_ANON_KEY in Vercel, served by /api/config. */
+var acct = {sb:null, user:null, timer:null, applying:false, mode:"signin"};
+function acctSnapshot(){ return {wallet:state.wallet, enabled:state.enabled, trips:trips, home:state.home}; }
+function acctPush(){
+  if(!acct.sb || !acct.user) return;
+  return acct.sb.from("profiles").upsert({user_id:acct.user.id, data:acctSnapshot(), updated_at:new Date().toISOString()})
+    .then(function(r){ if(r.error) throw r.error; document.getElementById("acct-sync").textContent = "Saved to your account."; })
+    .catch(function(){ document.getElementById("acct-sync").textContent = "Couldn’t reach your account just now. Changes are kept on this device and will save next time."; });
+}
+function acctApply(d){
+  acct.applying = true;
+  if(d.wallet){ state.wallet = d.wallet; state.enabled = d.enabled || {}; state.walletIsDemo = false; persist(); }
+  if(Array.isArray(d.trips)){ trips = d.trips; saveTrips(); }
+  if(d.home && AP[d.home] && !qs.get("home")){ state.home = d.home; syncUrl(); }
+  acct.applying = false;
+  renderWallet(); renderHomePill(); renderTrips(); renderAll();
+}
+function acctPull(){
+  return acct.sb.from("profiles").select("data").eq("user_id", acct.user.id).maybeSingle().then(function(r){
+    if(r.error) throw r.error;
+    if(r.data && r.data.data && Object.keys(r.data.data).length){ acctApply(r.data.data); toast("Welcome back. Your saved wallet and trips are loaded."); }
+    else { acctPush(); toast("Account created. Your wallet and trips will save automatically."); }
+  }).catch(function(){ toast("Signed in, but your saved data couldn’t load. Try again in a moment."); });
+}
+function acctRender(){
+  var on = !!acct.user && acct.mode!=="reset", btn = document.getElementById("btn-account");
+  btn.classList.toggle("on", on);
+  document.getElementById("btn-account-text").textContent = on ? "Account" : "Sign in";
+  btn.setAttribute("aria-label", on ? "Your account ("+acct.user.email+")" : "Sign in to save your data");
+  document.getElementById("acct-form").hidden = on;
+  document.getElementById("acct-signed").hidden = !on;
+  if(on) document.getElementById("acct-who").textContent = acct.user.email;
+  document.getElementById("dlg-account-title").textContent = on ? "Your account" : ({signin:"Sign in", signup:"Create an account", forgot:"Reset your password", reset:"Choose a new password"})[acct.mode];
+}
+function acctMode(mode){
+  acct.mode = mode;
+  var passF = document.getElementById("acct-pass-field"), emailF = document.getElementById("acct-email-field"), pass = document.getElementById("acct-pass");
+  emailF.hidden = mode==="reset";
+  passF.hidden = mode==="forgot";
+  pass.setAttribute("autocomplete", mode==="signin" ? "current-password" : "new-password");
+  document.getElementById("acct-submit").textContent = ({signin:"Sign in", signup:"Create account", forgot:"Send reset link", reset:"Save new password"})[mode];
+  document.getElementById("acct-forgot").hidden = mode!=="signin";
+  document.getElementById("acct-switch-wrap").hidden = mode==="reset";
+  document.getElementById("acct-switch-q").textContent = mode==="signin" ? "New here?" : "Have an account?";
+  document.getElementById("acct-switch").textContent = mode==="signin" ? "Create an account" : "Sign in";
+  document.getElementById("acct-pass").previousElementSibling.textContent = mode==="reset" ? "New password" : "Password";
+  acctMsg("");
+  acctRender();
+}
+function acctMsg(text, kind){ var m = document.getElementById("acct-msg"); m.textContent = text; m.className = "acct-msg"+(kind?" "+kind:""); }
+function acctSubmit(e){
+  e.preventDefault();
+  var email = document.getElementById("acct-email").value.trim(), pass = document.getElementById("acct-pass").value, btn = document.getElementById("acct-submit");
+  if(acct.mode!=="reset" && !/^\S+@\S+\.\S+$/.test(email)) return acctMsg("Enter a valid email address.", "err");
+  if(acct.mode!=="forgot" && pass.length < 8) return acctMsg("Use a password with at least 8 characters.", "err");
+  btn.disabled = true; acctMsg("One moment…");
+  var auth = acct.sb.auth, redirect = location.origin + location.pathname, p;
+  if(acct.mode==="signin") p = auth.signInWithPassword({email:email, password:pass}).then(function(r){ if(r.error) throw r.error; acctMsg(""); document.getElementById("dlg-account").close(); });
+  else if(acct.mode==="signup") p = auth.signUp({email:email, password:pass, options:{emailRedirectTo:redirect}}).then(function(r){
+    if(r.error) throw r.error;
+    if(!r.data.session) acctMsg("Check your email and tap the link to confirm your account, then sign in here.", "ok");
+    else document.getElementById("dlg-account").close();
+  });
+  else if(acct.mode==="forgot") p = auth.resetPasswordForEmail(email, {redirectTo:redirect}).then(function(r){ if(r.error) throw r.error; acctMsg("If that email has an account, a reset link is on its way.", "ok"); });
+  else p = auth.updateUser({password:pass}).then(function(r){ if(r.error) throw r.error; acctMode("signin"); toast("Password updated."); document.getElementById("dlg-account").close(); });
+  p.catch(function(err){
+    var m = (err && err.message) || "";
+    acctMsg(/invalid login/i.test(m) ? "That email and password don’t match." :
+            /not confirmed/i.test(m) ? "Confirm your email first. Check your inbox for the link." :
+            /already registered/i.test(m) ? "That email already has an account. Sign in instead." :
+            /rate limit|too many/i.test(m) ? "Too many tries. Wait a minute and try again." :
+            "Something went wrong. Try again.", "err");
+  }).then(function(){ btn.disabled = false; });
+}
+(function(){
+  fetch("/api/config").then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; }).then(function(cfg){
+    if(!cfg.supabaseUrl || !cfg.supabaseAnonKey) return;          // accounts not set up: stay local-only
+    var sc = document.createElement("script");
+    sc.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js";
+    sc.crossOrigin = "anonymous";
+    sc.onload = function(){
+      acct.sb = window.supabase.createClient(cfg.supabaseUrl, cfg.supabaseAnonKey);
+      var btn = document.getElementById("btn-account"); btn.hidden = false;
+      btn.addEventListener("click", function(){ acctRender(); document.getElementById("dlg-account").showModal(); });
+      document.getElementById("acct-form").addEventListener("submit", acctSubmit);
+      document.getElementById("acct-switch").addEventListener("click", function(){ acctMode(acct.mode==="signin" ? "signup" : "signin"); });
+      document.getElementById("acct-forgot").addEventListener("click", function(){ acctMode("forgot"); });
+      document.getElementById("acct-signout").addEventListener("click", function(){
+        acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); toast("Signed out. Your data stays on this device too."); });
+      });
+      window.MSAccount = { changed: function(){
+        if(!acct.user || acct.applying) return;
+        clearTimeout(acct.timer); acct.timer = setTimeout(acctPush, 1200);
+      } };
+      acct.sb.auth.onAuthStateChange(function(event, session){
+        var was = acct.user && acct.user.id;
+        acct.user = session ? session.user : null;
+        if(event==="PASSWORD_RECOVERY"){ acctMode("reset"); document.getElementById("dlg-account").showModal(); return; }
+        acctRender();
+        if(acct.user && acct.user.id!==was) setTimeout(acctPull, 0);   // outside the auth callback, per Supabase's advice
+      });
+      acctMode("signin");
+    };
+    document.head.appendChild(sc);
+  });
+})();
 
 /* ===================== ASSISTANT =====================
    "Miles": a small chat panel that answers simple questions. The browser
