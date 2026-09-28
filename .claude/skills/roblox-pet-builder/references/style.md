@@ -116,3 +116,6 @@ Reference pets are calibration only. Don't reproduce a reference's animal + pale
 ## 9. Taste notes (from the user's feedback)
 - Creative variety over copies: invent new animals and themes in this style rather than
   replicating the reference pets. (user, first round)
+- When recreating a reference image, 90–95 % similarity is the bar; below that, don't deliver.
+  The first Moonbloom Fawn attempt scored ~30 %: it reused the fox's smooth skin body (long narrow
+  head, thin legs) when the reference was a chunky brick-built chibi fawn with a big round head. (user)

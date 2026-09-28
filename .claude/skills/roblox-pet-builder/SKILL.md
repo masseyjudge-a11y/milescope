@@ -21,6 +21,31 @@ language, but a new design.
 - `scripts/blender_studs.py`: Blender helpers (stud generation, stud/AO bake, FBX export).
 - `templates/PetKit.lua`: the Parts-only fallback library (no Blender needed).
 
+## Quality gate: 90–95 % similarity or don't deliver
+When the user gives a reference image (or asks for a pet like a reference), the result must be
+**90–95 % similar** to it. Below that, do not deliver the pet: keep iterating, or stop and tell the
+user honestly what is blocking it. Never present a lower-scoring pet as done.
+
+Score every candidate before delivering, side by side with the reference, from the same angles
+(front, side, 3/4, and the reference's own views if it has them). Score each category 0–10:
+
+| Category | Weight | What 10 means |
+|---|---|---|
+| Silhouette and proportions | 30 % | head/body/leg ratios, head shape, posture match |
+| Build style | 20 % | same construction (stacked bricks vs smooth facets), stud size and density |
+| Colour placement | 20 % | every colour region in the same place and size |
+| Features | 20 % | every horn, ear, petal, flower, marking, cuff present, same shape and size |
+| Face | 10 % | eye size, colour and glow, muzzle length, expression |
+
+Total = weighted sum × 10 (%). Deliver only at ≥ 90 %. Report the score and the lowest category
+honestly with the delivery. Read proportions off the reference by measuring it (head height ÷ body
+height, leg length ÷ shoulder height and so on), never by eye alone.
+
+Match the reference's **construction**: if it is visibly built from stacked bricks (blocky
+segments, visible brick edges), build it from bricks/voxels (box primitives snapped to a 1-stud
+grid), not the smooth skin-modifier body. The skin-modifier body is only for references with smooth,
+sculpted shapes.
+
 ## Which build path
 - **Blender MCP (default)** when a Blender MCP connection is available: smooth, faceted organic
   shapes like the references, real baked studs, one light mesh per pet. Follow
