@@ -228,13 +228,7 @@
     position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:10px;color:var(--text-3);font-size:12.5px;z-index:3;background:var(--bg);
   }
-  .globe-loading .spin{
-    width:22px;height:22px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);
-    animation:spin .8s linear infinite;
-  }
   .globe-loading[hidden]{display:none}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @media (prefers-reduced-motion:reduce){ .globe-loading .spin{animation:none} }
   .globe-fallback{
     position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
     gap:6px;color:var(--text-3);font-size:12.5px;text-align:center;padding:20px;z-index:3;background:var(--bg);
@@ -526,8 +520,6 @@
   .ob-globe-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     gap:calc(10 * var(--u));font-size:calc(12.5 * var(--u));color:var(--text-3)}
   .ob-globe-loading[hidden]{display:none}
-  .ob-globe-loading b{width:calc(20 * var(--u));height:calc(20 * var(--u));border-radius:50%;font-size:0;
-    border:calc(2 * var(--u)) solid var(--hair-2);border-top-color:var(--accent);animation:spin .8s linear infinite}
   .ob-globe-fb{position:absolute;top:50%;left:58%;width:calc(620 * var(--u));height:calc(620 * var(--u));
     margin:calc(-310 * var(--u)) 0 0 calc(-310 * var(--u));border-radius:50%;display:none;
     background:radial-gradient(circle at 36% 34%,#2A1A0E,#120A06 56%,#05070C 100%);
@@ -774,10 +766,10 @@
   .ob-bar .ob-btn{flex:none}
 
   /* ---------- the card face ----------
-     Drawn in CSS: issuer card art is trademarked and their CDNs aren't meant
-     to be hotlinked. Give any card an `art` URL in ONBOARD_CARDS and the
-     photo layers on top, fading in on load and removing itself on error so
-     this face shows through. Named .ob-card, not .card, to stay clear of the
+     Each card in ONBOARD_CARDS points `art` at the issuer's own product
+     image. It fades in on load and replaces this drawn face; if the issuer
+     moves or blocks the file, the image removes itself and this CSS face,
+     tinted to match the card, shows instead. Named .ob-card, not .card, to stay clear of the
      app's own .card-item / .card-dot rules above. */
   .ob-card{position:relative;aspect-ratio:1.586;border-radius:calc(14 * var(--u));overflow:hidden;
     background:linear-gradient(152deg,var(--t0),var(--t1));
@@ -786,8 +778,16 @@
   .ob-card::before{content:"";position:absolute;inset:0;mix-blend-mode:overlay;
     background:repeating-radial-gradient(circle at 118% -18%,
       rgba(255,255,255,.055) 0 calc(1.2 * var(--u)),transparent calc(1.2 * var(--u)) calc(12 * var(--u)))}
-  .ob-card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}
+  .ob-card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .4s ease}
   .ob-card-art.ready{opacity:1}
+  /* the issuer's art already carries the chip, network and name: drop the
+     drawn face behind it so nothing doubles up or peeks around the edges */
+  .ob-card.has-art{background:none;box-shadow:none}
+  .ob-card.has-art::before,.ob-card.has-art .ob-card-print{display:none}
+  /* with the drawn face gone, the caption carries the card's name */
+  .pick-name{display:none;margin-top:calc(12 * var(--u));font-size:calc(13.5 * var(--u));font-weight:600;color:var(--text-1);text-align:left}
+  .pick:has(.has-art) .pick-name{display:block}
+  .pick:has(.has-art) .pick-prog{margin-top:calc(4 * var(--u))}
   .ob-card-sheen{position:absolute;inset:0;opacity:0;transition:opacity .3s ease;
     background:radial-gradient(closest-side circle at var(--mx,50%) var(--my,50%),
       rgba(255,255,255,.32),rgba(255,255,255,.06) 55%,transparent 78%)}
@@ -1114,10 +1114,8 @@
   .rd-live{margin-top:20px}
   .live-btn{width:100%;justify-content:center;padding:12px 0;background:rgba(56,189,248,.14);border-color:rgba(125,211,252,.35);color:#E0F2FE;font-weight:600}
   .live-btn:hover{background:rgba(56,189,248,.22)}
-  .live-skel{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-  .live-skel i{display:block;height:30px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.1),rgba(255,255,255,.04));
-    background-size:200% 100%;animation:shimmer 1.2s linear infinite}
-  @keyframes shimmer{to{background-position:-200% 0}}
+  .orb-wait{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--text-3)}
+  .orb-wait canvas{flex:none}
   .live-sum{margin:12px 0 8px !important;font-size:13px !important}
   .live-sum b{color:var(--ok)}
   .live-rows{display:flex;flex-direction:column;gap:4px}
@@ -1336,9 +1334,10 @@
     font-size:10px;font-weight:600;color:var(--text-2);padding:3px 7px;border-radius:7px;background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.12);transition:opacity .25s ease,transform .4s var(--spring)}
   .search-wrap.sentence .search-hint{opacity:1;transform:translateY(-50%) scale(1)}
-  .search-wrap.asking input{background-image:linear-gradient(90deg,rgba(56,189,248,0),rgba(56,189,248,.18),rgba(56,189,248,0));
-    background-size:200% 100%;animation:shimmer 1s linear infinite;border-color:rgba(125,211,252,.5)}
+  .search-wrap.asking input{border-color:rgba(125,211,252,.5)}
   .search-wrap.asking .search-hint{opacity:0}
+  .search-orb{position:absolute;right:10px;top:50%;margin-top:-10px;opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .search-wrap.asking .search-orb{opacity:1}
   .nl-box{flex:none;margin:-2px 0 10px;padding:10px 11px;border-radius:14px;background:rgba(56,189,248,.07);border:1px solid rgba(125,211,252,.22);
     animation:pop-in .45s var(--spring)}
   .nl-box[hidden]{display:none}
@@ -1378,7 +1377,7 @@
   .map-hint,.map-legend,.stat-strip .stat,.stat-strip .live-status{border-radius:var(--r-pane) !important}
   .btn,.chip,.home-pill,.icon-btn,.segmented,.segmented button,.seg-thumb,.stepper,.stepper button,.search-wrap input,
   .filter-row select,.wallet-row input[type=number],.field input,.nl-chip,.row-status,.badge,.rd-meta span,.src,
-  .best-tag,.sweet-tag,.bonus-tag,.st,.tb-item,.tb-verdict,.opt-row,.verdict,.live-row,.live-skel i,.search-hint,
+  .best-tag,.sweet-tag,.bonus-tag,.st,.tb-item,.tb-verdict,.opt-row,.verdict,.live-row,.search-hint,
   .mobiletabs button,.navtabs button,.navtabs .nav-cs,.strip-x,.dlg-head .btn.ghost,.live-btn,.brand,.brand .mark,
   .ob-btn,.ob-chip,.ob-ap-field,.ob-ap-list,.ob-ap-list li,.ob-bal,.ob-bal input,.ob-bal-presets button,.ob-acc,.ob-callout,
   .ob-panel,.ob-eyebrow,.stepper output{border-radius:var(--r-ctl) !important}
@@ -1440,6 +1439,29 @@
   #onboarding .ob-scrim{transition:opacity 1.6s ease .5s,background .8s var(--e-expo),backdrop-filter .8s ease}
 
   .deals-note{font-size:12px !important;color:var(--text-3) !important;margin:0 0 14px !important;padding-left:10px;border-left:2px solid var(--accent-line)}
+
+  /* ---- performance ---- */
+  /* the grain reads the same standing still, and a moving blend layer
+     recomposites the whole screen three times a second */
+  .ob-grain{animation:none}
+
+  /* Phones and tablets: every live blur, blend and drifting glow sits on top
+     of a 3D globe that redraws every frame, which is what makes Safari
+     stutter. Same look, drawn once: solid glass instead of frosted, still
+     glows, and a light blur kept only on the two bars that float over content. */
+  @media (hover:none) and (pointer:coarse){
+    :root{--glass:rgba(14,19,32,.9);--glass-strong:rgba(12,16,28,.96)}
+    *,*::before,*::after,::backdrop{-webkit-backdrop-filter:none !important;backdrop-filter:none !important}
+    .topbar,.mobiletabs{-webkit-backdrop-filter:blur(12px) !important;backdrop-filter:blur(12px) !important}
+    dialog::backdrop{background:rgba(2,4,10,.72)}
+    .ob-blob,.ambient i{animation:none !important}
+    .ambient i{filter:none}
+    .ambient,.ob-grain,.ob-card::before{mix-blend-mode:normal}
+    .ob-grain{display:none}
+    .wallet-col::after,.routes-col::after,.topbar::after,.strip::after,dialog::after,.best-pick::after{display:none}
+    /* dimming the globe with opacity costs nothing; a CSS filter re-runs on every frame */
+    #onboarding.mode-gs .ob-globe,#onboarding.mode-setup .ob-globe{filter:none;opacity:.6}
+  }
 </style>
 </head>
 <body>
@@ -1476,7 +1498,7 @@
     <div class="ob-globe" id="ob-globe-mount"></div>
     <div class="ob-planes" id="ob-planes"></div>
     <div class="ob-globe-fb"></div>
-    <div class="ob-globe-loading" id="ob-globe-loading"><b>Loading</b>Loading the globe</div>
+    <div class="ob-globe-loading" id="ob-globe-loading"><canvas data-orb="searching" data-orb-size="32" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Loading the globe</div>
     <div class="ob-scrim"></div>
   </div>
 
@@ -1708,7 +1730,7 @@
     <div class="map-attr">Drag to rotate · click a route</div>
     <div class="globe-stage">
       <div id="globe-container" role="application" aria-label="Interactive 3D globe of award routes from your home airport. Drag to rotate, or click a route line or destination for details"></div>
-      <div class="globe-loading" id="globe-loading"><span class="spin" aria-hidden="true"></span>Loading globe…</div>
+      <div class="globe-loading" id="globe-loading"><canvas data-orb="searching" data-orb-size="64" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Loading globe…</div>
       <div class="globe-fallback" id="globe-fallback">The globe can't load on this device. All your routes are in the list.</div>
     </div>
     <div class="map-legend" id="map-legend"></div>
@@ -1721,6 +1743,7 @@
       <svg class="ic ico" aria-hidden="true"><use href="#i-search"/></svg>
       <input type="search" id="search-input" placeholder="Search city, code, or country" autocomplete="off" aria-label="Search routes by city, code, or country">
       <span class="search-hint" aria-hidden="true">Enter</span>
+      <canvas class="search-orb" data-orb="solving" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>
     </div>
     <div class="nl-box" id="nl-chips" hidden></div>
     <div class="filter-row">
@@ -1856,6 +1879,7 @@
      scripts (not document.write, which Chrome may skip on slow connections;
      that was the "globe never shows up" failure). jsdelivr first; unpkg only
      if jsdelivr itself is unreachable. -->
+<script src="vendor/thinking-orbs/orbs.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js" crossorigin="anonymous"></script>
 <script>if(typeof Globe==="undefined"){document.write('<script src="https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js"><\/script>');}</script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" crossorigin="anonymous"></script>
@@ -2728,7 +2752,7 @@ function buildBloomMap(img){
   return a;
 }
 
-/* Runs once, behind the loading spinner. 2048×1024 matches the source
+/* Runs once, behind the loading orb. 2048×1024 matches the source
    imagery, so nothing is invented and nothing is thrown away; at any lower
    resolution the dot matrix aliases into moiré as the globe turns. Passing
    img === null (no imagery reachable) still yields the dotted dark sphere;
@@ -2849,6 +2873,12 @@ function resolveGlobeTextures(){
    handoff invisible, the camera is copied across, and there is nothing
    about the planet itself to give the switch away. */
 function applyGlobeSkin(g){
+  // phones: 1.5x instead of the library's 2x, about 44% fewer pixels per frame
+  try{
+    if(matchMedia("(pointer:coarse)").matches && Math.min(screen.width, screen.height) <= 500){
+      g.renderer().setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
+    }
+  }catch(e){}
   g.backgroundColor("rgba(0,0,0,0)")
    .showAtmosphere(true).atmosphereColor("#FFD9B5").atmosphereAltitude(0.16);
   var mat = g.globeMaterial();
@@ -2892,7 +2922,23 @@ function updateGlobeSize(){
   if(!World) return;
   var rect = mapStage.getBoundingClientRect();
   if(rect.width>40 && rect.height>40){ World.width(rect.width).height(rect.height); }
+  syncWorldAnimation();
 }
+/* The map globe stops drawing while nobody can see it: under the onboarding
+   overlay (the hero globe is doing the work there), on a phone tab that hides
+   the map, or in a background tab. */
+var worldRunning = true;
+function syncWorldAnimation(){
+  if(!World || !World.pauseAnimation) return;
+  var ob = document.getElementById("onboarding");
+  var covered = ob && !ob.hidden && !ob.classList.contains("handing-off");
+  var rect = mapStage.getBoundingClientRect();
+  var run = !covered && rect.width>40 && rect.height>40 && document.visibilityState!=="hidden";
+  if(run===worldRunning) return;
+  worldRunning = run;
+  if(run) World.resumeAnimation(); else World.pauseAnimation();
+}
+document.addEventListener("visibilitychange", syncWorldAnimation);
 var resizeTimer = null;
 window.addEventListener("resize", function(){
   clearTimeout(resizeTimer);
@@ -3017,6 +3063,7 @@ function initGlobe(){
 
     var origin = AP[state.home];
     World.pointOfView({lat:origin.lat, lng:origin.lng, altitude:2.1}, 0);
+    syncWorldAnimation();
     globeReady = true;
     window.__msWorld = World;
     if(window.MSGlobeGlass) window.MSGlobeGlass(World, document.querySelector(".globe-stage"), "lg-globe");
@@ -3281,7 +3328,8 @@ function wireAvailability(btn, el, route){
   btn.addEventListener("click",function(){
     btn.disabled = true; btn.textContent = "Checking seats.aero…";
     track("live_check", {route:route.originIata+"-"+route.destIata, cabin:state.cabin});
-    el.innerHTML = '<div class="live-skel"><i></i><i></i><i></i></div>';
+    el.innerHTML = '<div class="orb-wait" role="status"><canvas data-orb="searching" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Looking for open award seats…</div>';
+    if(window.ThinkingOrbs) ThinkingOrbs.scan(el);
     fetchAvailability(route.originIata, route.destIata, state.cabin)
       .then(function(data){ renderAvailability(el, data, route); btn.remove(); })
       .catch(function(err){
@@ -3779,7 +3827,7 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-close]"),function(
 
 /* ===================== LATEST DEALS (bonuses built in + live RSS via /api/deals) ===================== */
 
-var dealsLoaded = false;
+var dealsLoaded = false, dealsPending = false;
 function timeAgo(iso){
   if(!iso) return "";
   var then = new Date(iso).getTime();
@@ -3840,14 +3888,17 @@ function renderDeals(items){
       '<div class="deal-meta">'+escapeHtml(it.source)+(it.pubDate?" · "+timeAgo(it.pubDate):"")+'</div></a>';
   }).join("");
   body.innerHTML = '<p class="deals-note">Milescope checks the points blogs every 6 hours and uses TypeSafe’s Jev model to pick out new transfer bonuses. New ones are marked Auto-detected.</p>' + bonusCardsHtml() +
-    (list ? '<div class="rd-label">From the points blogs</div><div class="deal-list">'+list+'</div>' : "");
+    (list ? '<div class="rd-label">From the points blogs</div><div class="deal-list">'+list+'</div>' : "")+
+    (dealsPending ? '<div class="orb-wait" role="status"><canvas data-orb="working" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Checking the points blogs…</div>' : "");
+  if(window.ThinkingOrbs) ThinkingOrbs.scan(body);
 }
 function loadDeals(){
-  if(dealsLoaded) return;
+  if(dealsLoaded || dealsPending) return;
+  dealsPending = true;
   renderDeals([]);
   fetch("/api/deals").then(function(r){ if(!r.ok) throw new Error("no api"); return r.json(); })
-    .then(function(data){ dealsLoaded = true; renderDeals(data.items); })
-    .catch(function(){ /* bonuses alone are still useful */ });
+    .then(function(data){ dealsLoaded = true; dealsPending = false; renderDeals(data.items); })
+    .catch(function(){ dealsPending = false; renderDeals([]); /* bonuses alone are still useful */ });
 }
 
 /* ===================== INIT ===================== */
@@ -3875,13 +3926,13 @@ loadLiveBonuses();
 "use strict";
 
 var ONBOARD_CARDS = [
-  {id:"csr",          name:"Chase Sapphire Reserve",   program:"chase_ur", net:"VISA INFINITE",  tag:"Premium travel",       tint:["#16437E","#071A34"], art:null},
-  {id:"csp",          name:"Chase Sapphire Preferred", program:"chase_ur", net:"VISA SIGNATURE", tag:"Everyday travel",      tint:["#2170CC","#0B2E60"], art:null},
-  {id:"amex_plat",    name:"Amex Platinum",            program:"amex_mr",  net:"AMEX",           tag:"Lounges and credits",  tint:["#8D949D","#2B3036"], art:null},
-  {id:"amex_gold",    name:"Amex Gold",                program:"amex_mr",  net:"AMEX",           tag:"Dining and groceries", tint:["#C89A3F","#6B4A14"], art:null},
-  {id:"venture_x",    name:"Capital One Venture X",    program:"capone",   net:"VISA INFINITE",  tag:"Flat-rate travel",     tint:["#14584A","#06201C"], art:null},
-  {id:"bilt",         name:"Bilt Mastercard",          program:"bilt",     net:"MASTERCARD",     tag:"Points on rent",       tint:["#2E2A26","#0D0B09"], art:null},
-  {id:"citi_premier", name:"Citi Strata Premier",      program:"citi_typ", net:"MASTERCARD",     tag:"Bonus categories",     tint:["#24405E","#0A1726"], art:null}
+  {id:"csr",          name:"Chase Sapphire Reserve",   program:"chase_ur", net:"VISA INFINITE",  tag:"Premium travel",       tint:["#16437E","#071A34"], art:"https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire_reserve_card_Halo.png"},
+  {id:"csp",          name:"Chase Sapphire Preferred", program:"chase_ur", net:"VISA SIGNATURE", tag:"Everyday travel",      tint:["#2170CC","#0B2E60"], art:"https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire-preferredcard2026.png"},
+  {id:"amex_plat",    name:"Amex Platinum",            program:"amex_mr",  net:"AMEX",           tag:"Lounges and credits",  tint:["#8D949D","#2B3036"], art:"https://www.aexp-static.com/online/myca/shared/summary/cardasset/images/NUS000000363_480x304_STRAIGHT_96.png"},
+  {id:"amex_gold",    name:"Amex Gold",                program:"amex_mr",  net:"AMEX",           tag:"Dining and groceries", tint:["#C89A3F","#6B4A14"], art:"https://www.aexp-static.com/online/myca/shared/summary/cardasset/images/NUS000000174_480x304_STRAIGHT_96.png"},
+  {id:"venture_x",    name:"Capital One Venture X",    program:"capone",   net:"VISA INFINITE",  tag:"Flat-rate travel",     tint:["#14584A","#06201C"], art:"https://ecm.capitalone.com/WCM/card/products/venturex-cg-static-card-1000x630-2.png"},
+  {id:"bilt",         name:"Bilt Mastercard",          program:"bilt",     net:"MASTERCARD",     tag:"Points on rent",       tint:["#2E2A26","#0D0B09"], art:"https://static.biltrewards.com/assets/wallet/bilt-tahoe.png"},
+  {id:"citi_premier", name:"Citi Strata Premier",      program:"citi_typ", net:"MASTERCARD",     tag:"Bonus categories",     tint:["#24405E","#0A1726"], art:"https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-premier-credit-card/citi-strata-premier-credit-card_306x192.webp"}
 ];
 /* Official program names, with each airline's own site icon (self-hosted in /logos). */
 var MARQUEE = [
@@ -3914,7 +3965,7 @@ var RAD     = Math.PI/180;
 function glowOf(c){ var p = PMAP[c.program]; return (p && p.color) || "#38BDF8"; }
 function cardFace(c){
   return '<div class="ob-card" style="--t0:'+c.tint[0]+';--t1:'+c.tint[1]+';--glow:'+glowOf(c)+'">'+
-    (c.art ? '<img class="ob-card-art" alt="" src="'+c.art+'" loading="lazy" decoding="async">' : '')+
+    (c.art ? '<img class="ob-card-art" alt="" src="'+c.art+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '')+
     '<span class="ob-card-sheen" aria-hidden="true"></span>'+
     '<div class="ob-card-print"><div class="ob-card-row">'+
       '<svg class="ob-card-chip" viewBox="0 0 40 30" aria-hidden="true">'+
@@ -3927,9 +3978,10 @@ function cardFace(c){
 }
 function wireArt(scope){
   Array.prototype.forEach.call(scope.querySelectorAll(".ob-card-art"), function(img){
-    if(img.complete && img.naturalWidth) img.classList.add("ready");
+    function ready(){ img.classList.add("ready"); img.parentNode.classList.add("has-art"); }
+    if(img.complete && img.naturalWidth) ready();
     else{
-      img.addEventListener("load", function(){ img.classList.add("ready"); });
+      img.addEventListener("load", ready);
       img.addEventListener("error", function(){ img.remove(); });
     }
   });
@@ -4036,12 +4088,16 @@ function buildPlanes(){
     heroPlanes.push({el:el, a:toVec(r[0][0],r[0][1]), b:toVec(r[1][0],r[1][1]),
       t:(i*0.137)%1, speed:0.000035 + (i%3)*0.000008});
   });
-  requestAnimationFrame(flyPlanes);
+  startPlanes();
 }
-var lastTs = 0;
+var lastTs = 0, planesRaf = 0;
+function startPlanes(){
+  if(!planesRaf && heroPlanes.length){ lastTs = 0; planesRaf = requestAnimationFrame(flyPlanes); }
+}
 function flyPlanes(ts){
-  requestAnimationFrame(flyPlanes);
-  if(!HeroGlobe || !heroReady || !heroLive || root.hidden) return;
+  if(!heroLive || root.hidden){ planesRaf = 0; return; }
+  planesRaf = requestAnimationFrame(flyPlanes);
+  if(!HeroGlobe || !heroReady) return;
   var dt = lastTs ? Math.min(ts-lastTs, 64) : 16; lastTs = ts;
   var pov = HeroGlobe.pointOfView(), camV = toVec(pov.lat, pov.lng);
   for(var i=0;i<heroPlanes.length;i++){
@@ -4081,6 +4137,7 @@ function handOff(){
     }, reduced ? 0 : 180);
   }
   root.classList.add("handing-off");
+  if(typeof syncWorldAnimation==="function") syncWorldAnimation();
   window.setTimeout(function(){
     heroLive = false;
     if(HeroGlobe && HeroGlobe.pauseAnimation) HeroGlobe.pauseAnimation();
@@ -4144,8 +4201,10 @@ function spotlight(){
 
 /* ══ landing content ════════════════════════════════════════════ */
 function renderMarquee(){
+  // no loading="lazy": the strip slides by transform, which never counts as
+  // scrolling them into view, so lazy logos past the edge never loaded
   var one = MARQUEE.map(function(n){
-    return '<span class="ob-mq-item"><img src="logos/'+n[1]+'.png" alt="" width="18" height="18" loading="lazy" decoding="async"><b>'+n[0].replace("&","&amp;")+'</b></span>';
+    return '<span class="ob-mq-item"><img src="logos/'+n[1]+'.png" alt="" width="18" height="18" decoding="async"><b>'+n[0].replace("&","&amp;")+'</b></span>';
   }).join("");
   document.getElementById("ob-mq").innerHTML = one + one;   // two copies → seamless -50% loop
 }
@@ -4244,6 +4303,7 @@ function renderGrid(){
       '<span class="pick-lift"><span class="pick-tilt">'+cardFace(c)+
         '<span class="pick-ring" aria-hidden="true"></span>'+
         '<span class="pick-check" aria-hidden="true">'+ic("check")+'</span></span></span>'+
+      '<span class="pick-name" aria-hidden="true">'+c.name+'</span>'+
       '<span class="pick-prog"><i aria-hidden="true"></i>Fills '+(prog?prog.short:"points")+'</span></button>';
   }).join("");
   wireArt(gridEl);
@@ -4431,7 +4491,10 @@ function openOnboarding(){
   wireOnboarding();
   root.hidden = false;
   heroLive = true;
+  root.classList.remove("handing-off");
   if(HeroGlobe && HeroGlobe.resumeAnimation) HeroGlobe.resumeAnimation();
+  startPlanes();
+  if(typeof syncWorldAnimation==="function") syncWorldAnimation();
   setMode("landing");
   window.setTimeout(sizeHeroGlobe, 80);   // the stage was display:none until now
 }
