@@ -630,12 +630,6 @@
   .ob-cta{display:flex;align-items:center;gap:calc(20 * var(--u));margin-top:calc(34 * var(--u));flex-wrap:wrap}
   .ob-cs-link{font-size:calc(14 * var(--u));text-decoration:none;opacity:.9}
   .ob-cs-link:hover{opacity:1}
-  .ob-proof{display:flex;gap:calc(34 * var(--u));margin:calc(40 * var(--u)) 0 0;flex-wrap:wrap}
-  .ob-proof div{display:flex;flex-direction:column;gap:calc(2 * var(--u))}
-  .ob-proof dt{font-family:var(--serif);font-size:calc(28 * var(--u));font-weight:700;color:#fff;letter-spacing:calc(-.8 * var(--u));line-height:1}
-  .ob-proof dd{margin:0;font-size:calc(12.5 * var(--u));color:var(--text-3)}
-  .anim .ob-proof{opacity:0}
-  .anim.play .ob-proof{--rise:calc(12 * var(--u));animation:ob-rise .7s var(--e-quint) 1.02s both}
   .ob-inline{font:inherit;color:var(--accent-2);cursor:pointer;text-decoration:underline;
     text-underline-offset:calc(3 * var(--u));text-decoration-color:rgba(125,211,252,.4)}
   .ob-inline:hover{color:#fff}
@@ -1618,12 +1612,6 @@
           <button class="ob-btn ghost" type="button" data-demo>Explore a sample wallet</button>
           <a class="ob-inline ob-cs-link" href="case-study.html">Read the product case study <svg class="ico sm"><use href="#i-arrow"/></svg></a>
         </div>
-        <dl class="ob-proof">
-          <div><dt class="ob-num" id="ob-proof-ap">72</dt><dd>airports</dd></div>
-          <div><dt class="ob-num">25</dt><dd>booking programs</dd></div>
-          <div><dt class="ob-num">5</dt><dd>card currencies</dd></div>
-          <div><dt class="ob-num" id="ob-proof-bonus">5</dt><dd>transfer bonuses live</dd></div>
-        </dl>
       </div>
       <div class="ob-marquee" aria-hidden="true"><div class="ob-mq-track" id="ob-mq"></div></div>
     </section>
@@ -4859,9 +4847,6 @@ function wireOnboarding(){
       toast("Sample wallet loaded. Edit the balances on the left to make it yours.");
     });
   });
-  var apEl = document.getElementById("ob-proof-ap"); if(apEl) apEl.textContent = AIRPORTS.length;
-  var bnEl = document.getElementById("ob-proof-bonus");
-  if(bnEl) bnEl.textContent = BONUSES.filter(function(b){ return Date.now() <= new Date(b.ends+"T23:59:59").getTime(); }).length;
   document.getElementById("ob-back-btn").addEventListener("click", function(){ setMode("landing"); });
   document.getElementById("ob-continue-btn").addEventListener("click", function(){ finish(true); });
   // "I already have a key" hands straight off to the app's Settings dialog,
