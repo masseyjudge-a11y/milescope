@@ -228,13 +228,7 @@
     position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
     gap:10px;color:var(--text-3);font-size:12.5px;z-index:3;background:var(--bg);
   }
-  .globe-loading .spin{
-    width:22px;height:22px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);
-    animation:spin .8s linear infinite;
-  }
   .globe-loading[hidden]{display:none}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  @media (prefers-reduced-motion:reduce){ .globe-loading .spin{animation:none} }
   .globe-fallback{
     position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
     gap:6px;color:var(--text-3);font-size:12.5px;text-align:center;padding:20px;z-index:3;background:var(--bg);
@@ -526,8 +520,6 @@
   .ob-globe-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
     gap:calc(10 * var(--u));font-size:calc(12.5 * var(--u));color:var(--text-3)}
   .ob-globe-loading[hidden]{display:none}
-  .ob-globe-loading b{width:calc(20 * var(--u));height:calc(20 * var(--u));border-radius:50%;font-size:0;
-    border:calc(2 * var(--u)) solid var(--hair-2);border-top-color:var(--accent);animation:spin .8s linear infinite}
   .ob-globe-fb{position:absolute;top:50%;left:58%;width:calc(620 * var(--u));height:calc(620 * var(--u));
     margin:calc(-310 * var(--u)) 0 0 calc(-310 * var(--u));border-radius:50%;display:none;
     background:radial-gradient(circle at 36% 34%,#2A1A0E,#120A06 56%,#05070C 100%);
@@ -1114,10 +1106,8 @@
   .rd-live{margin-top:20px}
   .live-btn{width:100%;justify-content:center;padding:12px 0;background:rgba(56,189,248,.14);border-color:rgba(125,211,252,.35);color:#E0F2FE;font-weight:600}
   .live-btn:hover{background:rgba(56,189,248,.22)}
-  .live-skel{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-  .live-skel i{display:block;height:30px;border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.1),rgba(255,255,255,.04));
-    background-size:200% 100%;animation:shimmer 1.2s linear infinite}
-  @keyframes shimmer{to{background-position:-200% 0}}
+  .orb-wait{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--text-3)}
+  .orb-wait canvas{flex:none}
   .live-sum{margin:12px 0 8px !important;font-size:13px !important}
   .live-sum b{color:var(--ok)}
   .live-rows{display:flex;flex-direction:column;gap:4px}
@@ -1336,9 +1326,10 @@
     font-size:10px;font-weight:600;color:var(--text-2);padding:3px 7px;border-radius:7px;background:rgba(255,255,255,.08);
     border:1px solid rgba(255,255,255,.12);transition:opacity .25s ease,transform .4s var(--spring)}
   .search-wrap.sentence .search-hint{opacity:1;transform:translateY(-50%) scale(1)}
-  .search-wrap.asking input{background-image:linear-gradient(90deg,rgba(56,189,248,0),rgba(56,189,248,.18),rgba(56,189,248,0));
-    background-size:200% 100%;animation:shimmer 1s linear infinite;border-color:rgba(125,211,252,.5)}
+  .search-wrap.asking input{border-color:rgba(125,211,252,.5)}
   .search-wrap.asking .search-hint{opacity:0}
+  .search-orb{position:absolute;right:10px;top:50%;margin-top:-10px;opacity:0;pointer-events:none;transition:opacity .2s ease}
+  .search-wrap.asking .search-orb{opacity:1}
   .nl-box{flex:none;margin:-2px 0 10px;padding:10px 11px;border-radius:14px;background:rgba(56,189,248,.07);border:1px solid rgba(125,211,252,.22);
     animation:pop-in .45s var(--spring)}
   .nl-box[hidden]{display:none}
@@ -1378,7 +1369,7 @@
   .map-hint,.map-legend,.stat-strip .stat,.stat-strip .live-status{border-radius:var(--r-pane) !important}
   .btn,.chip,.home-pill,.icon-btn,.segmented,.segmented button,.seg-thumb,.stepper,.stepper button,.search-wrap input,
   .filter-row select,.wallet-row input[type=number],.field input,.nl-chip,.row-status,.badge,.rd-meta span,.src,
-  .best-tag,.sweet-tag,.bonus-tag,.st,.tb-item,.tb-verdict,.opt-row,.verdict,.live-row,.live-skel i,.search-hint,
+  .best-tag,.sweet-tag,.bonus-tag,.st,.tb-item,.tb-verdict,.opt-row,.verdict,.live-row,.search-hint,
   .mobiletabs button,.navtabs button,.navtabs .nav-cs,.strip-x,.dlg-head .btn.ghost,.live-btn,.brand,.brand .mark,
   .ob-btn,.ob-chip,.ob-ap-field,.ob-ap-list,.ob-ap-list li,.ob-bal,.ob-bal input,.ob-bal-presets button,.ob-acc,.ob-callout,
   .ob-panel,.ob-eyebrow,.stepper output{border-radius:var(--r-ctl) !important}
@@ -1476,7 +1467,7 @@
     <div class="ob-globe" id="ob-globe-mount"></div>
     <div class="ob-planes" id="ob-planes"></div>
     <div class="ob-globe-fb"></div>
-    <div class="ob-globe-loading" id="ob-globe-loading"><b>Loading</b>Loading the globe</div>
+    <div class="ob-globe-loading" id="ob-globe-loading"><canvas data-orb="searching" data-orb-size="32" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Loading the globe</div>
     <div class="ob-scrim"></div>
   </div>
 
@@ -1708,7 +1699,7 @@
     <div class="map-attr">Drag to rotate · click a route</div>
     <div class="globe-stage">
       <div id="globe-container" role="application" aria-label="Interactive 3D globe of award routes from your home airport. Drag to rotate, or click a route line or destination for details"></div>
-      <div class="globe-loading" id="globe-loading"><span class="spin" aria-hidden="true"></span>Loading globe…</div>
+      <div class="globe-loading" id="globe-loading"><canvas data-orb="searching" data-orb-size="64" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Loading globe…</div>
       <div class="globe-fallback" id="globe-fallback">The globe can't load on this device. All your routes are in the list.</div>
     </div>
     <div class="map-legend" id="map-legend"></div>
@@ -1721,6 +1712,7 @@
       <svg class="ic ico" aria-hidden="true"><use href="#i-search"/></svg>
       <input type="search" id="search-input" placeholder="Search city, code, or country" autocomplete="off" aria-label="Search routes by city, code, or country">
       <span class="search-hint" aria-hidden="true">Enter</span>
+      <canvas class="search-orb" data-orb="solving" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>
     </div>
     <div class="nl-box" id="nl-chips" hidden></div>
     <div class="filter-row">
@@ -1856,6 +1848,7 @@
      scripts (not document.write, which Chrome may skip on slow connections;
      that was the "globe never shows up" failure). jsdelivr first; unpkg only
      if jsdelivr itself is unreachable. -->
+<script src="vendor/thinking-orbs/orbs.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js" crossorigin="anonymous"></script>
 <script>if(typeof Globe==="undefined"){document.write('<script src="https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js"><\/script>');}</script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" crossorigin="anonymous"></script>
@@ -2728,7 +2721,7 @@ function buildBloomMap(img){
   return a;
 }
 
-/* Runs once, behind the loading spinner. 2048×1024 matches the source
+/* Runs once, behind the loading orb. 2048×1024 matches the source
    imagery, so nothing is invented and nothing is thrown away; at any lower
    resolution the dot matrix aliases into moiré as the globe turns. Passing
    img === null (no imagery reachable) still yields the dotted dark sphere;
@@ -3281,7 +3274,8 @@ function wireAvailability(btn, el, route){
   btn.addEventListener("click",function(){
     btn.disabled = true; btn.textContent = "Checking seats.aero…";
     track("live_check", {route:route.originIata+"-"+route.destIata, cabin:state.cabin});
-    el.innerHTML = '<div class="live-skel"><i></i><i></i><i></i></div>';
+    el.innerHTML = '<div class="orb-wait" role="status"><canvas data-orb="searching" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Looking for open award seats…</div>';
+    if(window.ThinkingOrbs) ThinkingOrbs.scan(el);
     fetchAvailability(route.originIata, route.destIata, state.cabin)
       .then(function(data){ renderAvailability(el, data, route); btn.remove(); })
       .catch(function(err){
@@ -3779,7 +3773,7 @@ Array.prototype.forEach.call(document.querySelectorAll("[data-close]"),function(
 
 /* ===================== LATEST DEALS (bonuses built in + live RSS via /api/deals) ===================== */
 
-var dealsLoaded = false;
+var dealsLoaded = false, dealsPending = false;
 function timeAgo(iso){
   if(!iso) return "";
   var then = new Date(iso).getTime();
@@ -3840,14 +3834,17 @@ function renderDeals(items){
       '<div class="deal-meta">'+escapeHtml(it.source)+(it.pubDate?" · "+timeAgo(it.pubDate):"")+'</div></a>';
   }).join("");
   body.innerHTML = '<p class="deals-note">Milescope checks the points blogs every 6 hours and uses TypeSafe’s Jev model to pick out new transfer bonuses. New ones are marked Auto-detected.</p>' + bonusCardsHtml() +
-    (list ? '<div class="rd-label">From the points blogs</div><div class="deal-list">'+list+'</div>' : "");
+    (list ? '<div class="rd-label">From the points blogs</div><div class="deal-list">'+list+'</div>' : "")+
+    (dealsPending ? '<div class="orb-wait" role="status"><canvas data-orb="working" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Checking the points blogs…</div>' : "");
+  if(window.ThinkingOrbs) ThinkingOrbs.scan(body);
 }
 function loadDeals(){
-  if(dealsLoaded) return;
+  if(dealsLoaded || dealsPending) return;
+  dealsPending = true;
   renderDeals([]);
   fetch("/api/deals").then(function(r){ if(!r.ok) throw new Error("no api"); return r.json(); })
-    .then(function(data){ dealsLoaded = true; renderDeals(data.items); })
-    .catch(function(){ /* bonuses alone are still useful */ });
+    .then(function(data){ dealsLoaded = true; dealsPending = false; renderDeals(data.items); })
+    .catch(function(){ dealsPending = false; renderDeals([]); /* bonuses alone are still useful */ });
 }
 
 /* ===================== INIT ===================== */
