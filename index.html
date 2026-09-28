@@ -766,10 +766,10 @@
   .ob-bar .ob-btn{flex:none}
 
   /* ---------- the card face ----------
-     Drawn in CSS: issuer card art is trademarked and their CDNs aren't meant
-     to be hotlinked. Give any card an `art` URL in ONBOARD_CARDS and the
-     photo layers on top, fading in on load and removing itself on error so
-     this face shows through. Named .ob-card, not .card, to stay clear of the
+     Each card in ONBOARD_CARDS points `art` at the issuer's own product
+     image. It fades in on load and replaces this drawn face; if the issuer
+     moves or blocks the file, the image removes itself and this CSS face,
+     tinted to match the card, shows instead. Named .ob-card, not .card, to stay clear of the
      app's own .card-item / .card-dot rules above. */
   .ob-card{position:relative;aspect-ratio:1.586;border-radius:calc(14 * var(--u));overflow:hidden;
     background:linear-gradient(152deg,var(--t0),var(--t1));
@@ -778,8 +778,16 @@
   .ob-card::before{content:"";position:absolute;inset:0;mix-blend-mode:overlay;
     background:repeating-radial-gradient(circle at 118% -18%,
       rgba(255,255,255,.055) 0 calc(1.2 * var(--u)),transparent calc(1.2 * var(--u)) calc(12 * var(--u)))}
-  .ob-card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .4s ease}
+  .ob-card-art{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity .4s ease}
   .ob-card-art.ready{opacity:1}
+  /* the issuer's art already carries the chip, network and name: drop the
+     drawn face behind it so nothing doubles up or peeks around the edges */
+  .ob-card.has-art{background:none;box-shadow:none}
+  .ob-card.has-art::before,.ob-card.has-art .ob-card-print{display:none}
+  /* with the drawn face gone, the caption carries the card's name */
+  .pick-name{display:none;margin-top:calc(12 * var(--u));font-size:calc(13.5 * var(--u));font-weight:600;color:var(--text-1);text-align:left}
+  .pick:has(.has-art) .pick-name{display:block}
+  .pick:has(.has-art) .pick-prog{margin-top:calc(4 * var(--u))}
   .ob-card-sheen{position:absolute;inset:0;opacity:0;transition:opacity .3s ease;
     background:radial-gradient(closest-side circle at var(--mx,50%) var(--my,50%),
       rgba(255,255,255,.32),rgba(255,255,255,.06) 55%,transparent 78%)}
@@ -3918,13 +3926,13 @@ loadLiveBonuses();
 "use strict";
 
 var ONBOARD_CARDS = [
-  {id:"csr",          name:"Chase Sapphire Reserve",   program:"chase_ur", net:"VISA INFINITE",  tag:"Premium travel",       tint:["#16437E","#071A34"], art:null},
-  {id:"csp",          name:"Chase Sapphire Preferred", program:"chase_ur", net:"VISA SIGNATURE", tag:"Everyday travel",      tint:["#2170CC","#0B2E60"], art:null},
-  {id:"amex_plat",    name:"Amex Platinum",            program:"amex_mr",  net:"AMEX",           tag:"Lounges and credits",  tint:["#8D949D","#2B3036"], art:null},
-  {id:"amex_gold",    name:"Amex Gold",                program:"amex_mr",  net:"AMEX",           tag:"Dining and groceries", tint:["#C89A3F","#6B4A14"], art:null},
-  {id:"venture_x",    name:"Capital One Venture X",    program:"capone",   net:"VISA INFINITE",  tag:"Flat-rate travel",     tint:["#14584A","#06201C"], art:null},
-  {id:"bilt",         name:"Bilt Mastercard",          program:"bilt",     net:"MASTERCARD",     tag:"Points on rent",       tint:["#2E2A26","#0D0B09"], art:null},
-  {id:"citi_premier", name:"Citi Strata Premier",      program:"citi_typ", net:"MASTERCARD",     tag:"Bonus categories",     tint:["#24405E","#0A1726"], art:null}
+  {id:"csr",          name:"Chase Sapphire Reserve",   program:"chase_ur", net:"VISA INFINITE",  tag:"Premium travel",       tint:["#16437E","#071A34"], art:"https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire_reserve_card_Halo.png"},
+  {id:"csp",          name:"Chase Sapphire Preferred", program:"chase_ur", net:"VISA SIGNATURE", tag:"Everyday travel",      tint:["#2170CC","#0B2E60"], art:"https://creditcards.chase.com/content/dam/jpmc-marketplace/card-art/sapphire-preferredcard2026.png"},
+  {id:"amex_plat",    name:"Amex Platinum",            program:"amex_mr",  net:"AMEX",           tag:"Lounges and credits",  tint:["#8D949D","#2B3036"], art:"https://www.aexp-static.com/online/myca/shared/summary/cardasset/images/NUS000000363_480x304_STRAIGHT_96.png"},
+  {id:"amex_gold",    name:"Amex Gold",                program:"amex_mr",  net:"AMEX",           tag:"Dining and groceries", tint:["#C89A3F","#6B4A14"], art:"https://www.aexp-static.com/online/myca/shared/summary/cardasset/images/NUS000000174_480x304_STRAIGHT_96.png"},
+  {id:"venture_x",    name:"Capital One Venture X",    program:"capone",   net:"VISA INFINITE",  tag:"Flat-rate travel",     tint:["#14584A","#06201C"], art:"https://ecm.capitalone.com/WCM/card/products/venturex-cg-static-card-1000x630-2.png"},
+  {id:"bilt",         name:"Bilt Mastercard",          program:"bilt",     net:"MASTERCARD",     tag:"Points on rent",       tint:["#2E2A26","#0D0B09"], art:"https://static.biltrewards.com/assets/wallet/bilt-tahoe.png"},
+  {id:"citi_premier", name:"Citi Strata Premier",      program:"citi_typ", net:"MASTERCARD",     tag:"Bonus categories",     tint:["#24405E","#0A1726"], art:"https://aemapi.citi.com/content/dam/cfs/uspb/usmkt/cards/en/static/images/citi-strata-premier-credit-card/citi-strata-premier-credit-card_306x192.webp"}
 ];
 /* Official program names, with each airline's own site icon (self-hosted in /logos). */
 var MARQUEE = [
@@ -3957,7 +3965,7 @@ var RAD     = Math.PI/180;
 function glowOf(c){ var p = PMAP[c.program]; return (p && p.color) || "#38BDF8"; }
 function cardFace(c){
   return '<div class="ob-card" style="--t0:'+c.tint[0]+';--t1:'+c.tint[1]+';--glow:'+glowOf(c)+'">'+
-    (c.art ? '<img class="ob-card-art" alt="" src="'+c.art+'" loading="lazy" decoding="async">' : '')+
+    (c.art ? '<img class="ob-card-art" alt="" src="'+c.art+'" loading="lazy" decoding="async" referrerpolicy="no-referrer">' : '')+
     '<span class="ob-card-sheen" aria-hidden="true"></span>'+
     '<div class="ob-card-print"><div class="ob-card-row">'+
       '<svg class="ob-card-chip" viewBox="0 0 40 30" aria-hidden="true">'+
@@ -3970,9 +3978,10 @@ function cardFace(c){
 }
 function wireArt(scope){
   Array.prototype.forEach.call(scope.querySelectorAll(".ob-card-art"), function(img){
-    if(img.complete && img.naturalWidth) img.classList.add("ready");
+    function ready(){ img.classList.add("ready"); img.parentNode.classList.add("has-art"); }
+    if(img.complete && img.naturalWidth) ready();
     else{
-      img.addEventListener("load", function(){ img.classList.add("ready"); });
+      img.addEventListener("load", ready);
       img.addEventListener("error", function(){ img.remove(); });
     }
   });
@@ -4294,6 +4303,7 @@ function renderGrid(){
       '<span class="pick-lift"><span class="pick-tilt">'+cardFace(c)+
         '<span class="pick-ring" aria-hidden="true"></span>'+
         '<span class="pick-check" aria-hidden="true">'+ic("check")+'</span></span></span>'+
+      '<span class="pick-name" aria-hidden="true">'+c.name+'</span>'+
       '<span class="pick-prog"><i aria-hidden="true"></i>Fills '+(prog?prog.short:"points")+'</span></button>';
   }).join("");
   wireArt(gridEl);
