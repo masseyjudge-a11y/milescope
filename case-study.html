@@ -161,7 +161,7 @@
   <a class="brand" href="/"><i aria-hidden="true"></i>Milescope</a>
   <div class="toc">
     <a href="#problem">Problem</a><a href="#audit">Testing v1</a><a href="#solution">What I built</a>
-    <a href="#decisions">Decisions</a><a href="#metrics">Metrics</a><a href="#learned">Learnings</a><a href="#next">What's next</a>
+    <a href="#decisions">Decisions</a><a href="#metrics">Metrics</a><a href="#learned">Learnings</a><a href="#assistant">Assistant</a><a href="#next">What's next</a>
   </div>
   <a class="cta" href="/">Open the app</a>
 </nav>
@@ -310,8 +310,30 @@
     </div>
   </section>
 
+  <section id="assistant" class="rv">
+    <div class="eyebrow">07 · Adding an assistant</div>
+    <h2>A small helper for quick questions, built to cost nothing.</h2>
+    <p>Some questions don’t fit a map or a list, like “where can my Chase points go?” or “what does cents per point mean?”.
+      So I added Miles, a small chat assistant in the corner of the app. It can see your balances and the trips from your
+      airport, so its answers are about your wallet, not points in general.</p>
+    <div class="decision">
+      <h3>Which AI to use</h3>
+      <div class="opts"><div class="opt"><b>A top paid model</b>Best answers, but every question costs a cent or two, paid by me.</div>
+        <div class="opt pick"><b>A free tier (Groq)</b>No cost, about 100 questions a day. Answers are a bit weaker.</div></div>
+      <p class="why"><b>Why:</b> it’s a side project with no revenue, so a bill that grows with every visitor didn’t make sense.
+        I checked Gemini first, but its free tier had been cut to a few requests a day. Groq gave the most free room.
+        The code can switch to a paid model with one setting if it ever needs better answers.</p>
+    </div>
+    <div class="grid3">
+      <div class="card"><span class="tag blue">Fit the limit</span><h3>Send less</h3><p>Free tiers count every word. I cut what each question sends to the top 15 trips and only your cards’ partners, about a third of the first version.</p></div>
+      <div class="card"><span class="tag amber">Stay honest</span><h3>Answer from real data</h3><p>It’s told to only use the app’s numbers for your trips, never make up routes or prices, and remind you prices are estimates.</p></div>
+      <div class="card"><span class="tag red">Fail gently</span><h3>No dead ends</h3><p>If the daily limit runs out or something breaks, it says so in plain words instead of showing an error.</p></div>
+    </div>
+    <p>What I’d measure: how many people open it, how many ask a second question, and whether people who use it save more trips.</p>
+  </section>
+
   <section id="next" class="rv">
-    <div class="eyebrow">07 · What’s next</div>
+    <div class="eyebrow">08 · What’s next</div>
     <h2>Check my assumptions with real people, then grow.</h2>
     <div class="road">
       <div class="col"><h3>Now</h3>
