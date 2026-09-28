@@ -586,6 +586,18 @@
     transition:transform .18s cubic-bezier(.22,1,.36,1)}
   .ob-btn:hover .ob-arw{transform:translateX(calc(2.5 * var(--u)))}
 
+  /* blue liquid-metal ring round the main call to action (Paper Shaders'
+     liquidMetal, as metal-fx uses, tinted to the accent). The ring is the
+     wrapper's padding showing the shader behind the button; without WebGL2
+     a static blue gradient stands in. */
+  .metal-wrap{position:relative;display:inline-flex;padding:calc(3 * var(--u));border-radius:4px;isolation:isolate;
+    box-shadow:0 0 calc(22 * var(--u)) calc(-4 * var(--u)) rgba(56,189,248,.45)}
+  .metal-ring{position:absolute;inset:0;border-radius:inherit;overflow:hidden;z-index:-1;
+    background:linear-gradient(115deg,#0B3A5C,#7DD3FC 30%,#E0F2FE 45%,#38BDF8 60%,#0E4F7A 85%)}
+  .metal-ring.metal-live{background:#0B2A44}
+  .metal-ring canvas{display:block;width:100% !important;height:100% !important}
+  .metal-wrap .ob-btn{border-radius:2px !important}
+
   /* tertiary: text only, and no underline until it's actually hovered */
   .ob-link{font-size:calc(13.5 * var(--u));font-weight:500;color:rgba(255,255,255,.52);
     cursor:pointer;padding:calc(6 * var(--u)) calc(2 * var(--u));border-radius:calc(5 * var(--u));
@@ -866,6 +878,7 @@
       background:linear-gradient(180deg,rgba(3,7,17,.55) 0%,rgba(3,7,17,.1) 22%,rgba(3,7,17,.85) 54%,rgba(3,7,17,.98) 72%)}
     .ob-cta{gap:calc(14 * var(--u))}
     .ob-cta .ob-btn{width:100%}
+    .ob-cta .metal-wrap{width:100%}
     .ob-marquee{margin-top:calc(30 * var(--u))}
     .ob-h2{font-size:calc(32 * var(--u))}
     .ob-panel-head,.ob-panel-body,.ob-panel-foot{padding-left:calc(20 * var(--u));padding-right:calc(20 * var(--u))}
@@ -1475,7 +1488,7 @@
   .asst-fab:hover .asst-fab-tip,.asst-fab:focus-visible .asst-fab-tip{opacity:1}
   .asst-fab[aria-expanded="true"] .asst-fab-tip{opacity:0}
   .asst{position:fixed;z-index:60;right:calc(var(--list-w) + 28px);bottom:92px;width:min(370px,calc(100vw - 32px));
-    height:min(560px,calc(100vh - 190px));display:flex;flex-direction:column;overflow:hidden;
+    height:min(560px,calc(100vh - 190px));display:flex;flex-direction:column;overflow:visible;
     background:rgba(12,16,28,.94);border:1px solid var(--glass-rim);border-radius:var(--r-pane);
     box-shadow:0 30px 60px -20px rgba(0,0,0,.8);-webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur);
     transform-origin:100% 100%;transition:opacity .2s ease,transform .3s var(--spring)}
@@ -1486,7 +1499,7 @@
   .asst-id span{display:block;font-size:12px;color:var(--text-3)}
   .asst-x{flex:none;width:30px;height:30px;border-radius:var(--r-ctl);border:0;background:none;color:var(--text-2);cursor:pointer;font-size:18px;line-height:1}
   .asst-x:hover{background:rgba(255,255,255,.08);color:#fff}
-  .asst-log{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
+  .asst-log{flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;overscroll-behavior:contain}
   .asst-msg{max-width:88%;font-size:13.5px;line-height:1.5;padding:9px 12px;border-radius:var(--r-pane);overflow-wrap:anywhere}
   .asst-msg.me{align-self:flex-end;background:rgba(56,189,248,.16);border:1px solid rgba(125,211,252,.25);color:var(--text-1)}
   .asst-msg.bot{align-self:flex-start;background:rgba(255,255,255,.05);border:1px solid var(--line);color:var(--text-1)}
@@ -1500,7 +1513,14 @@
   .asst-sug{text-align:left;font:inherit;font-size:13px;color:var(--text-1);padding:8px 11px;cursor:pointer;
     background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:var(--r-ctl)}
   .asst-sug:hover{background:rgba(56,189,248,.1);border-color:var(--accent-line)}
-  .asst-form{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+  .asst-form{position:relative;display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+  .asst-beam,.asst-voice{position:absolute;inset:0;pointer-events:none;border-radius:inherit;z-index:2}
+  .asst-mic{flex:none;width:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+    color:var(--text-2);background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:var(--r-ctl)}
+  .asst-mic[hidden]{display:none}
+  .asst-mic svg{width:18px;height:18px}
+  .asst-mic:hover{color:#fff;border-color:var(--accent-line)}
+  .asst-mic[aria-pressed="true"]{color:#04131F;background:var(--accent);border-color:var(--accent)}
   .asst-form input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--text-1);padding:9px 11px;
     background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:var(--r-ctl);outline:none}
   .asst-form input:focus{border-color:var(--accent-line)}
@@ -1590,10 +1610,11 @@
         <h1 data-split>Know exactly where your points can fly you.</h1>
         <p>Add your cards and points. See every flight you can book, and the cheapest way to pay.</p>
         <div class="ob-cta">
+          <span class="metal-wrap"><span class="metal-ring" data-metal="#0EA5E9B0" data-metal-scale="1.6" aria-hidden="true"></span>
           <button class="ob-btn" type="button" data-go="setup">Plan with my cards
             <svg class="ob-arw" viewBox="0 0 16 16" fill="none" aria-hidden="true">
               <path d="M2.5 8h11M9 3.5 13.5 8 9 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </button>
+          </button></span>
           <button class="ob-btn ghost" type="button" data-demo>Explore a sample wallet</button>
           <a class="ob-inline ob-cs-link" href="case-study.html">Read the product case study <svg class="ico sm"><use href="#i-arrow"/></svg></a>
         </div>
@@ -1952,6 +1973,7 @@
   <canvas id="asst-fab-bot" aria-hidden="true"></canvas><span class="asst-fab-tip">Ask Miles</span>
 </button>
 <section class="asst" id="asst" hidden aria-label="Miles, points assistant">
+  <div class="asst-beam" id="asst-beam" aria-hidden="true"></div>
   <div class="asst-head">
     <canvas id="asst-bot" aria-hidden="true"></canvas>
     <div class="asst-id"><b>Miles</b><span id="asst-status">Ask me about your points</span></div>
@@ -1959,7 +1981,11 @@
   </div>
   <div class="asst-log" id="asst-log" aria-live="polite"></div>
   <form class="asst-form" id="asst-form">
+    <div class="asst-voice" id="asst-voice" aria-hidden="true"></div>
     <input id="asst-input" type="text" autocomplete="off" maxlength="800" placeholder="Ask a question…" aria-label="Your question">
+    <button type="button" class="asst-mic" id="asst-mic" aria-label="Ask by voice" aria-pressed="false" hidden>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+    </button>
     <button type="submit" id="asst-send">Send</button>
   </form>
   <p class="asst-note">AI answers can be wrong. Prices are estimates.</p>
@@ -1972,6 +1998,7 @@
      if jsdelivr itself is unreachable. -->
 <script src="vendor/thinking-orbs/orbs.js"></script>
 <script src="vendor/bot-avatars/bot.js"></script>
+<script src="vendor/metal/metal.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/globe.gl@2.46.2/dist/globe.gl.min.js" crossorigin="anonymous"></script>
 <script>if(typeof Globe==="undefined"){document.write('<script src="https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js"><\/script>');}</script>
 <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js" crossorigin="anonymous"></script>
@@ -4043,6 +4070,61 @@ function asstFormat(text){
   return html;
 }
 function asstBots(s){ asst.bots.forEach(function(b){ b.setState(s); }); }
+/* Border Beam round the panel while Miles thinks, Voice Glow along the input
+   while you talk (libraries.dev). They're React components, bundled with
+   Preact in vendor/agent-fx and fetched the first time the panel opens. */
+function asstFx(patch){ if(asst.fx) asst.fx.set(patch); else asst.fxQueue = Object.assign(asst.fxQueue||{}, patch); }
+function asstLoadFx(){
+  if(asst.fxLoading) return; asst.fxLoading = true;
+  var sc = document.createElement("script"); sc.src = "vendor/agent-fx/agentfx.js"; sc.async = true;
+  sc.onload = function(){
+    try{
+      asst.fx = AgentFX.mount(document.getElementById("asst-beam"), document.getElementById("asst-voice"), {
+        beam: {brightness: 2.4, saturation: 1.6, glowSize: 1.3},   // the default reads too faint on this dark panel
+        voice: {type: "pill", brightness: 1.8}
+      });
+      if(asst.fxQueue) asst.fx.set(asst.fxQueue);
+    }catch(e){ asst.fx = null; }
+  };
+  document.head.appendChild(sc);
+}
+/* voice questions: the browser's speech recognition types what you say, and
+   the mic stream drives the glow. Shown only where recognition exists. */
+var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+function asstStopVoice(){
+  if(asst.rec){ try{ asst.rec.stop(); }catch(e){} }
+  if(asst.stream){ asst.stream.getTracks().forEach(function(t){ t.stop(); }); asst.stream = null; }
+  document.getElementById("asst-mic").setAttribute("aria-pressed","false");
+  asstFx({listening:false, stream:null});
+}
+function asstVoice(){
+  if(asst.rec){ asstStopVoice(); return; }
+  if(asst.busy) return;
+  var input = document.getElementById("asst-input"), mic = document.getElementById("asst-mic");
+  var rec = new SpeechRec(), said = "";
+  rec.lang = navigator.language || "en-US"; rec.interimResults = true; rec.continuous = false;
+  rec.onresult = function(e){
+    said = Array.prototype.map.call(e.results, function(r){ return r[0].transcript; }).join("");
+    input.value = said;
+  };
+  rec.onend = function(){
+    asst.rec = null; asstStopVoice();
+    if(said.trim()){ input.value = ""; asstAsk(said); }
+  };
+  asst.rec = rec;
+  mic.setAttribute("aria-pressed","true");
+  asstFx({listening:true});
+  track("assistant_voice");
+  try{ rec.start(); }catch(e){ asst.rec = null; asstStopVoice(); return; }
+  // the glow follows your voice when the mic stream is available; if not,
+  // it just breathes while listening
+  if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia){
+    navigator.mediaDevices.getUserMedia({audio:true}).then(function(st){
+      if(!asst.rec){ st.getTracks().forEach(function(t){ t.stop(); }); return; }
+      asst.stream = st; asstFx({stream:st});
+    }).catch(function(){});
+  }
+}
 function asstAdd(role, text, cls){
   var log = document.getElementById("asst-log");
   var el = document.createElement("div");
@@ -4070,6 +4152,7 @@ function asstAsk(q){
   asst.busy = true; document.getElementById("asst-send").disabled = true;
   document.getElementById("asst-status").textContent = "Thinking…";
   asstBots("working");
+  asstFx({thinking:true});
   var wait = document.createElement("div"); wait.className = "asst-wait";
   wait.innerHTML = '<canvas data-orb="solving" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Thinking…';
   log.appendChild(wait); log.scrollTop = log.scrollHeight;
@@ -4094,13 +4177,16 @@ function asstAsk(q){
       wait.remove(); asst.busy = false; document.getElementById("asst-send").disabled = false;
       document.getElementById("asst-status").textContent = "Ask me about your points";
       asstBots("default");
+      asstFx({thinking:false});
     });
 }
 function asstToggle(open){
   asst.open = open;
+  if(!open && asst.rec) asstStopVoice();
   var panel = document.getElementById("asst"), fab = document.getElementById("asst-fab");
   panel.hidden = !open; fab.setAttribute("aria-expanded", open ? "true" : "false");
   if(open){
+    asstLoadFx();
     if(!document.getElementById("asst-log").children.length) asstHello();
     track("assistant_open");
     setTimeout(function(){ document.getElementById("asst-input").focus({preventScroll:true}); }, 60);
@@ -4116,6 +4202,8 @@ function asstToggle(open){
   document.getElementById("asst-fab").addEventListener("click", function(){ asstToggle(!asst.open); });
   document.getElementById("asst-x").addEventListener("click", function(){ asstToggle(false); document.getElementById("asst-fab").focus(); });
   document.addEventListener("keydown", function(e){ if(e.key==="Escape" && asst.open) asstToggle(false); });
+  var mic = document.getElementById("asst-mic");
+  if(SpeechRec){ mic.hidden = false; mic.addEventListener("click", asstVoice); }
   document.getElementById("asst-form").addEventListener("submit", function(e){
     e.preventDefault();
     var input = document.getElementById("asst-input");
