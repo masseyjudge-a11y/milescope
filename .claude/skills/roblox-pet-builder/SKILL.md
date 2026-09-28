@@ -1,6 +1,6 @@
 ---
 name: roblox-pet-builder
-description: Design and build original Roblox pets in the user's brick-built house style (faceted animals covered in raised square studs, spiky gold-tipped fins/wings/manes, rarity variants) as Luau scripts that build the pet from Parts in Roblox Studio. New animals, creatures and themes that feel like they belong in the same game, not copies of the reference pets. Use whenever the user asks to make, design, invent, generate, tweak, or recolour a Roblox pet, e.g. "make a dragon pet", "new Mythic pet idea", "golden version of the stag", "huge variant", "make a Secret version".
+description: Design and build original Roblox pets in the user's brick-built house style (faceted animals covered in raised square studs, spiky gold-tipped fins/wings/manes, rarity variants) modelled in Blender through Blender MCP with baked stud textures and imported into Roblox Studio (with a Parts-only Luau fallback). New animals, creatures and themes that feel like they belong in the same game, not copies of the reference pets. Use whenever the user asks to make, design, invent, generate, tweak, or recolour a Roblox pet, e.g. "make a dragon pet", "new Mythic pet idea", "golden version of the stag", "huge variant", "make a Secret version".
 ---
 
 # Roblox Pet Builder
@@ -16,7 +16,18 @@ language, but a new design.
 - `references/petkit-api.md`: the pet spec format.
 - `pets/`: finished pets. `Koi.lua` is a calibration study of a reference (used to tune the
   builders).
-- `templates/PetKit.lua`: the shared builder library every pet uses.
+- `references/blender-workflow.md`: **the primary build path**: Blender MCP modelling, baked
+  stud textures, glow parts, export and Roblox import.
+- `scripts/blender_studs.py`: Blender helpers (stud generation, stud/AO bake, FBX export).
+- `templates/PetKit.lua`: the Parts-only fallback library (no Blender needed).
+
+## Which build path
+- **Blender MCP (default)** when a Blender MCP connection is available: smooth, faceted organic
+  shapes like the references, real baked studs, one light mesh per pet. Follow
+  `references/blender-workflow.md` for steps 3–7 below instead of the PetKit steps.
+- **PetKit (fallback)** when there is no Blender connection or the user wants a quick in-Studio
+  prototype. Stepped Part-built shapes with the tiled `PetStuds` texture.
+- **Studs are required on both paths.** Never deliver a studless pet body.
 
 ## Workflow
 
