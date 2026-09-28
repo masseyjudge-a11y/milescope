@@ -62,11 +62,3 @@ model:PivotTo(CFrame.new(origin.X, groundY, origin.Z) * CFrame.Angles(0, math.ra
 model.Parent = workspace
 print("MoonbloomFawn placed at", model:GetPivot().Position)
 
--- glowing purple eyes
-for _, p in ipairs(model:GetDescendants()) do
-	if p:IsA("BasePart") and (string.find(string.lower(p.Name), "eye") or string.find(string.lower(p.Name), "cube")) then
-		for _, sa in ipairs(p:GetChildren()) do
-			if sa:IsA("SurfaceAppearance") then sa:Destroy() end
-		end
-	end
-end
