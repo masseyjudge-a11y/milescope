@@ -4005,20 +4005,19 @@ function assistantSnapshot(){
   PROGRAMS.forEach(function(p){ if(state.enabled[p.id]) wallet[p.name] = state.wallet[p.id]||0; });
   var routes = routesForOrigin(state.home).map(function(r){
     var b = planRoute(r, state.cabin).best, ok = !!b && b.status!=="short";
-    return {
-      to: r.dest.city+" ("+r.destIata+")", region: r.region, nonstop: !!r.isNonstop,
-      program: b ? BOOK_PROGRAMS[b.opt.program] : null,
-      miles: b ? b.need : r.pricing[state.cabin].minPoints,
-      canBook: ok,
-      pay: ok ? b.steps.map(function(s){ return fmtPts(s.pts)+" "+curName(s.cur); }).join(" + ") : null,
-      shortBy: !ok && b ? b.shortBy : undefined,
-      centsPerPoint: Math.round(centsPerPoint(r, state.cabin)*10)/10
-    };
+    // kept compact: free AI tiers count every token
+    var row = {to: r.dest.city+" "+r.destIata, via: b ? BOOK_PROGRAMS[b.opt.program] : null,
+      miles: b ? b.need : r.pricing[state.cabin].minPoints, cpp: Math.round(centsPerPoint(r, state.cabin)*10)/10};
+    if(ok) row.pay = b.steps.map(function(s){ return fmtPts(s.pts)+" "+curName(s.cur); }).join(" + ");
+    else row.shortBy = b ? b.shortBy : null;
+    if(r.isNonstop) row.nonstop = true;
+    return row;
   });
-  routes.sort(function(a,b){ return (b.canBook-a.canBook) || (a.miles-b.miles); });
+  routes.sort(function(a,b){ return (!!b.pay-!!a.pay) || (a.miles-b.miles); });
   var partners = {};
   Object.keys(TRANSFERS).forEach(function(prog){
     Object.keys(TRANSFERS[prog]).forEach(function(cur){
+      if(!state.enabled[cur]) return;             // only the cards they have
       var k = curName(cur); (partners[k] = partners[k] || []).push((BOOK_PROGRAMS[prog]||prog)+(TRANSFERS[prog][cur]!==1?" ("+TRANSFERS[prog][cur]+":1)":""));
     });
   });
@@ -4027,7 +4026,7 @@ function assistantSnapshot(){
     return curName(b.from)+" to "+b.to.map(function(t){ return BOOK_PROGRAMS[t]||t; }).join(", ")+": +"+b.pct+"% until "+b.ends;
   });
   return {home: state.home+(AP[state.home] ? " ("+AP[state.home].city+")" : ""), cabin: state.cabin, trip: tripLabel(),
-    balances: wallet, routes: routes.slice(0, 40), transferPartners: partners, activeBonuses: bonuses};
+    balances: wallet, routes: routes.slice(0, 15), routesTotal: routes.length, transferPartners: partners, activeBonuses: bonuses};
 }
 function asstFormat(text){
   // plain paragraphs, "- " bullets and **bold**; everything escaped first
@@ -4077,7 +4076,7 @@ function asstAsk(q){
   if(window.ThinkingOrbs) ThinkingOrbs.scan(wait);
   track("assistant_ask", {len:q.length});
   fetch("/api/assistant", {method:"POST", headers:{"content-type":"application/json"},
-    body: JSON.stringify({messages: asst.history.slice(-12), context: assistantSnapshot()})})
+    body: JSON.stringify({messages: asst.history.slice(-8), context: assistantSnapshot()})})
     .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(b){
       if(!r.ok || !b.reply){ var e = new Error(b.error||r.status); e.code = b.error || (r.status===404?"not_deployed":"error"); throw e; }
       return b.reply;
@@ -4088,7 +4087,7 @@ function asstAsk(q){
       asstAdd("assistant", err.code==="no_key" || err.code==="not_deployed"
         ? "I’m not switched on for this site yet. Check back soon."
         : err.code==="rate_limited" || err.code==="busy"
-        ? "I’m getting a lot of questions right now. Try again in a minute."
+        ? "I’ve hit my limit for now. Try again in a minute, or tomorrow if it’s been a busy day."
         : "Something went wrong on my end. Try asking again.", "err");
     })
     .then(function(){

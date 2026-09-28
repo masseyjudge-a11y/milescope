@@ -4,9 +4,14 @@
    The side-panel assistant. Claude answers short questions about points in
    general and about the visitor's own wallet, using the snapshot of the
    app's data the browser sends along (balances, the routes from their home
-   airport and what each costs them, transfer partners, live bonuses). The
-   key stays server-side. Env: ANTHROPIC_API_KEY (required),
-   ASSISTANT_MODEL (optional, defaults to claude-opus-5).
+   airport and what each costs them, transfer partners, live bonuses). Keys
+   stay server-side.
+
+   Provider, first key found wins:
+     GROQ_API_KEY       Groq's free tier (default model openai/gpt-oss-120b,
+                        override with GROQ_MODEL). Free, with daily limits.
+     ANTHROPIC_API_KEY  Claude (default claude-opus-5, override with
+                        ASSISTANT_MODEL). Paid per question.
 
    Guard rails, since this spends money per request: capped message length,
    capped history, capped context size, and a small per-IP rate limit (best
@@ -14,10 +19,12 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 
-const MODEL = process.env.ASSISTANT_MODEL || "claude-opus-5";
-const MAX_TURNS = 12;          // messages of history kept
-const MAX_CHARS = 800;         // per user message
-const MAX_CONTEXT = 24000;     // characters of app data
+const CLAUDE_MODEL = process.env.ASSISTANT_MODEL || "claude-opus-5";
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+const MAX_TURNS = 8;           // messages of history kept (free tiers count every token)
+const MAX_CHARS = 600;         // per user message
+const MAX_CONTEXT = 9000;      // characters of app data
 const RATE = { windowMs: 10 * 60 * 1000, max: 30 };
 
 const SYSTEM = `You are Miles, the assistant inside Milescope, a site that shows people where their credit card points can take them on award flights.
@@ -58,8 +65,55 @@ function cleanMessages(raw) {
   return msgs;
 }
 
+class Busy extends Error {}
+class NoKey extends Error {}
+
+async function askGroq(messages) {
+  const r = await fetch(GROQ_URL, {
+    method: "POST",
+    headers: { authorization: "Bearer " + process.env.GROQ_API_KEY, "content-type": "application/json" },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [{ role: "system", content: SYSTEM }, ...messages],
+      max_tokens: 1200,
+      temperature: 0.3,
+      ...(GROQ_MODEL.startsWith("openai/gpt-oss") ? { reasoning_effort: "low" } : {})
+    })
+  });
+  if (r.status === 429) throw new Busy();          // free tier's minute or daily limit
+  if (r.status === 401 || r.status === 403) throw new NoKey();
+  if (!r.ok) throw new Error("groq " + r.status);
+  const data = await r.json();
+  const choice = data.choices && data.choices[0];
+  return ((choice && choice.message && choice.message.content) || "").trim();
+}
+
+async function askClaude(messages) {
+  const client = new Anthropic();
+  try {
+    const response = await client.beta.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 4000,
+      output_config: { effort: "low" },          // short, simple answers
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",                      // a declined request is retried on another model
+      system: SYSTEM,
+      messages
+    });
+    if (response.stop_reason === "refusal") {
+      return "I can't help with that one, but I'm happy to answer questions about your points and trips.";
+    }
+    return response.content.filter((b) => b.type === "text").map((b) => b.text).join("").trim();
+  } catch (err) {
+    if (err instanceof Anthropic.RateLimitError) throw new Busy();
+    if (err instanceof Anthropic.AuthenticationError) throw new NoKey();
+    throw err;
+  }
+}
+
 export async function POST(request) {
-  if (!process.env.ANTHROPIC_API_KEY) return json({ error: "no_key" }, 503);
+  const provider = process.env.GROQ_API_KEY ? "groq" : process.env.ANTHROPIC_API_KEY ? "claude" : null;
+  if (!provider) return json({ error: "no_key" }, 503);
 
   const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
   if (limited(ip)) return json({ error: "rate_limited" }, 429);
@@ -76,33 +130,13 @@ export async function POST(request) {
   const last = messages[messages.length - 1];
   last.content = `<milescope_snapshot>\n${context}\n</milescope_snapshot>\n\n${last.content}`;
 
-  const client = new Anthropic();
   try {
-    const response = await client.beta.messages.create({
-      model: MODEL,
-      max_tokens: 4000,
-      output_config: { effort: "low" },          // short, simple answers
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",                      // a declined request is retried on another model
-      system: SYSTEM,
-      messages
-    });
-
-    if (response.stop_reason === "refusal") {
-      return json({ reply: "I can't help with that one, but I'm happy to answer questions about your points and trips." });
-    }
-    const reply = response.content
-      .filter((b) => b.type === "text")
-      .map((b) => b.text)
-      .join("")
-      .trim();
+    const reply = provider === "groq" ? await askGroq(messages) : await askClaude(messages);
     if (!reply) return json({ error: "empty" }, 502);
     return json({ reply });
   } catch (err) {
-    if (err instanceof Anthropic.RateLimitError) return json({ error: "busy" }, 429);
-    if (err instanceof Anthropic.AuthenticationError) return json({ error: "no_key" }, 503);
-    if (err instanceof Anthropic.BadRequestError) return json({ error: "bad_request" }, 400);
-    if (err instanceof Anthropic.APIError) return json({ error: "upstream" }, 502);
+    if (err instanceof Busy) return json({ error: "busy" }, 429);
+    if (err instanceof NoKey) return json({ error: "no_key" }, 503);
     return json({ error: "upstream" }, 502);
   }
 }
