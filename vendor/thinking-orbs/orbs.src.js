@@ -25,10 +25,9 @@ function parseTint(c) {
   return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
 }
 
-// The site animates only when the head script added .anim (it respects
-// Reduce Motion, with a ?motion override), so the orbs follow the same switch.
+// Reduce Motion gets one still frame, as in the React component.
 function animated() {
-  return document.documentElement.classList.contains("anim");
+  return !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
 }
 
 function mount(canvas) {

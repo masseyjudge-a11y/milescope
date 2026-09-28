@@ -149,6 +149,16 @@
   .arch .hl{fill:rgba(56,189,248,.1);stroke:rgba(125,211,252,.5)}
   .arch path{stroke:rgba(255,255,255,.35);fill:none;stroke-width:1.4}
 
+  /* waiting states */
+  .wait-head{margin-top:56px}
+  .orb-card{display:flex;flex-direction:column}
+  .orb-card .tag{align-self:flex-start}
+  .orb-stage{display:flex;align-items:center;justify-content:center;height:132px;margin:-6px -6px 16px;border-radius:14px;
+    background:radial-gradient(70% 90% at 50% 40%,rgba(56,189,248,.09),rgba(255,255,255,.015) 70%);border:1px solid var(--line)}
+  .orb-card code{font-size:11.5px;color:var(--accent-2);background:rgba(56,189,248,.1);padding:2px 7px;border-radius:6px}
+  .orb-inline{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;color:var(--text-3)}
+  .orb-inline canvas{flex:none}
+  .credit{font-size:13px;color:var(--text-3);margin-top:16px}
   .close{margin-top:110px;padding:44px;border-radius:28px;text-align:center;background:var(--glass);border:1px solid var(--rim);
     -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
   .close h2{margin:0 auto;max-width:18ch}
@@ -243,6 +253,26 @@
       <div class="card"><span class="tag green">Compare</span><h3>Value in ¢ per point</h3><p>Miles cost vs. an estimated cash fare: the metric points travelers already use to judge a redemption, surfaced on every route.</p></div>
       <div class="card"><span class="tag green">Plan</span><h3>Trip board</h3><p>Save trips across the year and see whether one wallet covers all of them, currency by currency.</p></div>
     </div>
+    <h3 class="wait-head">Waits that say what they’re doing</h3>
+    <p>A spinner only says “something is happening.” Every wait in Milescope uses a Thinking Orb instead, and each kind of work
+      gets its own motion, so you can tell what the app is doing without reading anything.</p>
+    <div class="grid3">
+      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="searching" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Searching orb"></canvas></div>
+        <span class="tag blue">Searching</span><h3>Finding seats</h3>
+        <p>A scan line sweeps a dotted globe while the map loads and while a live award-seat check runs.</p>
+        <div class="orb-inline"><canvas data-orb="searching" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Looking for open award seats…</div></div>
+      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="solving" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Solving orb"></canvas></div>
+        <span class="tag blue">Solving</span><h3>Reading a described trip</h3>
+        <p>Bands scramble and click back into place while Jev turns a sentence like “beach in winter, business class” into filters.</p>
+        <div class="orb-inline"><canvas data-orb="solving" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Reading your trip…</div></div>
+      <div class="card orb-card"><div class="orb-stage"><canvas data-orb="working" data-orb-size="64" data-orb-color="#7DD3FC" aria-label="Working orb"></canvas></div>
+        <span class="tag blue">Working</span><h3>Checking for new bonuses</h3>
+        <p>Particles trace tilted orbits while the deals panel pulls the latest transfer bonuses from the points blogs.</p>
+        <div class="orb-inline"><canvas data-orb="working" data-orb-size="20" data-orb-color="#7DD3FC" aria-hidden="true"></canvas>Checking the points blogs…</div></div>
+    </div>
+    <p class="credit">The orbs are <a href="https://libraries.dev/orbs" target="_blank" rel="noopener">Thinking Orbs</a> by Jakub Antalik (MIT).
+      The package is a React component and Milescope has no framework, so I bundled its engine with a small canvas wrapper: about 15 KB, no dependencies.
+      Orbs stop drawing when they’re off screen, and show a still frame when Reduce Motion is on.</p>
   </section>
 
   <section id="decisions" class="rv">
@@ -366,6 +396,7 @@
   secs.forEach(function(s){ if(s) so.observe(s); });
 })();
 </script>
+<script src="vendor/thinking-orbs/orbs.js"></script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>

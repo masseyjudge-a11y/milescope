@@ -4192,8 +4192,10 @@ function spotlight(){
 
 /* ══ landing content ════════════════════════════════════════════ */
 function renderMarquee(){
+  // no loading="lazy": the strip slides by transform, which never counts as
+  // scrolling them into view, so lazy logos past the edge never loaded
   var one = MARQUEE.map(function(n){
-    return '<span class="ob-mq-item"><img src="logos/'+n[1]+'.png" alt="" width="18" height="18" loading="lazy" decoding="async"><b>'+n[0].replace("&","&amp;")+'</b></span>';
+    return '<span class="ob-mq-item"><img src="logos/'+n[1]+'.png" alt="" width="18" height="18" decoding="async"><b>'+n[0].replace("&","&amp;")+'</b></span>';
   }).join("");
   document.getElementById("ob-mq").innerHTML = one + one;   // two copies → seamless -50% loop
 }
