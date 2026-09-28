@@ -1,0 +1,8 @@
+{
+  "name": "milescope",
+  "private": true,
+  "description": "No build step: index.html is the app. Dependencies here are for the functions in api/.",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0"
+  }
+}
