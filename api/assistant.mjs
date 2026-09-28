@@ -8,7 +8,7 @@
    stay server-side.
 
    Provider, first key found wins:
-     GROQ_API_KEY       Groq's free tier (default model openai/gpt-oss-120b,
+     GROQ_API_KEY       (or groq_key) Groq's free tier (default model openai/gpt-oss-120b,
                         override with GROQ_MODEL). Free, with daily limits.
      ANTHROPIC_API_KEY  Claude (default claude-opus-5, override with
                         ASSISTANT_MODEL). Paid per question.
@@ -22,6 +22,8 @@ import Anthropic from "@anthropic-ai/sdk";
 const CLAUDE_MODEL = process.env.ASSISTANT_MODEL || "claude-opus-5";
 const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+// accept the key under the name it was saved with in Vercel, too
+const GROQ_KEY = process.env.GROQ_API_KEY || process.env.GROQ_KEY || process.env.groq_key || "";
 const MAX_TURNS = 8;           // messages of history kept (free tiers count every token)
 const MAX_CHARS = 600;         // per user message
 const MAX_CONTEXT = 9000;      // characters of app data
@@ -71,7 +73,7 @@ class NoKey extends Error {}
 async function askGroq(messages) {
   const r = await fetch(GROQ_URL, {
     method: "POST",
-    headers: { authorization: "Bearer " + process.env.GROQ_API_KEY, "content-type": "application/json" },
+    headers: { authorization: "Bearer " + GROQ_KEY, "content-type": "application/json" },
     body: JSON.stringify({
       model: GROQ_MODEL,
       messages: [{ role: "system", content: SYSTEM }, ...messages],
@@ -112,7 +114,7 @@ async function askClaude(messages) {
 }
 
 export async function POST(request) {
-  const provider = process.env.GROQ_API_KEY ? "groq" : process.env.ANTHROPIC_API_KEY ? "claude" : null;
+  const provider = GROQ_KEY ? "groq" : process.env.ANTHROPIC_API_KEY ? "claude" : null;
   if (!provider) return json({ error: "no_key" }, 503);
 
   const ip = (request.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
