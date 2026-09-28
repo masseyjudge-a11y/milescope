@@ -5,6 +5,23 @@ Worked out from the user's reference pets in `references/examples/`: Koi (Mythic
 three-headed dog with a flame mane. When a rule here and your own taste disagree, the rule wins.
 When the user corrects a pet, write the correction here as a concrete rule.
 
+## 0. Style, not copies
+The references show **how** pets are made, not **what** to make. New pets are original designs:
+new animals, mythical creatures, hybrids and themes, built with the same DNA so they look like they
+come from the same game.
+
+| Keep (style DNA, sections 1–8) | Vary freely (creative space) |
+|---|---|
+| Square studs on every surface | The animal or creature: real, mythical, hybrid, elemental |
+| Faceted, stepped construction | Theme: fire, frost, storm, celestial, sakura, candy, crystal, spooky... |
+| Believable anatomy and proportions | The palette, within 1 base + 1–2 accents + trim |
+| Size by rarity | Pattern motifs: blotches, stripes, swirls, spots, bands, runes |
+| Spiky blade accents with contrasting tips | Which feature is the hero: antlers, tail, wings, mane, horns, fins |
+| Glossy cartoon eyes | Pose and attitude (proud, fierce, sleepy, playful) |
+| Rarity language (gold trim, halo, aura) | Accessories: collars, gems, armour plates, crystals, flowers |
+
+Reference pets are calibration only. Don't reproduce a reference's animal + palette + pattern.
+
 ## 1. Overall look: brick-built animals
 - Pets look like **brick-built toy animals**: faceted, low-poly shapes whose surfaces are covered in
   **raised square studs** (not round LEGO studs). The studs come from the `PetStuds` MaterialVariant
@@ -36,7 +53,9 @@ When the user corrects a pet, write the correction here as a concrete rule.
 - Patterns are **big flat blotches or bold swirls/stripes** in an accent colour (koi patches,
   tiger swirls, jellyfish diamonds). They are **asymmetric** left vs right where the real animal is (koi),
   symmetric where it is decorative (tiger swirls, jellyfish diamonds).
-- Measured reference colours (use these first, add new ones to the table when a pet needs them):
+- Measured reference colours. Treat them as the brightness/saturation benchmark: new themes bring
+  new colours, but keep bases light and soft, accents bold and saturated, and trim a warm gold.
+  Add colours that a finished pet used to the table:
 
 | Role | RGB | Seen on |
 |---|---|---|
@@ -93,3 +112,7 @@ When the user corrects a pet, write the correction here as a concrete rule.
 - Never thin, spindly fins: blades are broad (width 2–3.5 studs on a Mythic) and overlap into a solid fan.
 - Never floating gaps between parts; overlap slightly instead.
 - Never put the pet's pivot at its centre (it must be at the feet / below the hover point).
+
+## 9. Taste notes (from the user's feedback)
+- Creative variety over copies: invent new animals and themes in this style rather than
+  replicating the reference pets. (user, first round)

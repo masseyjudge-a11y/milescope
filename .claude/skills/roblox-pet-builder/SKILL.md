@@ -1,39 +1,54 @@
 ---
 name: roblox-pet-builder
-description: Build Roblox pet models in the user's brick-built house style (faceted animals covered in raised square studs, spiky gold-tipped fins/wings/manes, rarity variants) as Luau scripts that build the pet from Parts in Roblox Studio. Use whenever the user asks to make, design, generate, tweak, or recolour a Roblox pet, e.g. "make a dragon pet", "golden version of the koi", "huge variant", "make a Secret jellyfish".
+description: Design and build original Roblox pets in the user's brick-built house style (faceted animals covered in raised square studs, spiky gold-tipped fins/wings/manes, rarity variants) as Luau scripts that build the pet from Parts in Roblox Studio. New animals, creatures and themes that feel like they belong in the same game, not copies of the reference pets. Use whenever the user asks to make, design, invent, generate, tweak, or recolour a Roblox pet, e.g. "make a dragon pet", "new Mythic pet idea", "golden version of the stag", "huge variant", "make a Secret version".
 ---
 
 # Roblox Pet Builder
 
-Every pet must look like it belongs next to the user's reference pets. The rules live in
-`references/style.md`; the reference images are in `references/examples/`; finished pets
-in `pets/` are worked examples. All pets are built with one shared library,
-`templates/PetKit.lua`, so they all share the same studs, eyes, fins and variants.
+The job is **original pets in a shared style**. The user's reference pets (`references/examples/`)
+define how pets are *built and styled*; they are not designs to copy. Every new pet should be a
+fresh animal, creature or theme that would sit naturally next to the references in the same game:
+same studs, same faceted construction, same colour structure, same spiky accents, same rarity
+language, but a new design.
+
+- `references/style.md`: the style DNA (must keep) and the creative freedom (should vary).
+- `references/design-ideas.md`: themes, palettes, signature features and how to build each body type.
+- `references/petkit-api.md`: the pet spec format.
+- `pets/`: finished pets. `Koi.lua` is a calibration study of a reference (used to tune the
+  builders).
+- `templates/PetKit.lua`: the shared builder library every pet uses.
 
 ## Workflow
 
-1. **Read the style.** Read `references/style.md` in full. Then look at the reference images
-   closest to the requested animal (and ask the user for a reference image if the animal
-   is very different from anything there). Read the most similar pet in `pets/`
-   (`Koi.lua` shows every builder).
-2. **Plan before coding.** Write a short plan: rarity, target height and length (style.md §2),
-   palette roles from the measured colour table (§3), body rings, and every fin/wing/mane/spike
-   group with its colour and tip colour. Check the plan against the **Never** list (§8).
-3. **Write the pet** as `pets/<Name>.lua`, following the `PET` spec format in
-   `references/petkit-api.md`. Only data goes in the pet file. If you need a new kind of shape,
-   add a builder to PetKit (and document it) instead of hand-placing dozens of parts.
-4. **Preview and compare.** Run
-   `python3 scripts/preview.py pets/<Name>.lua` (needs `pip install lupa pillow numpy`). This runs
-   the real Luau with a Roblox stand-in and renders 4 views next to a 5-stud player block. Look at
-   the PNG next to the reference images and fix what differs: silhouette, proportions, fin size,
-   colour coverage, patch placement, eye size. Repeat until it matches; two or three rounds is normal.
-   Also preview the variants you promise (`--variant Golden`, `--variant Cyan,Secret`, `--variant Huge`).
-5. **Assemble the Studio script:**
+1. **Read the style.** Read `references/style.md` and `references/design-ideas.md`. Glance at the
+   reference images for the look, and at `pets/` for what already exists.
+2. **Design the concept first.** Decide, in a few lines: name, rarity, animal (real, mythical or
+   hybrid), theme, palette (1 base + 1–2 accents + trim), a **signature feature** that reads from far
+   away, and 2–3 supporting details. Rules:
+   - If the user named an animal, give it a theme and a signature feature of your choosing.
+   - If the request is open ("make a new pet"), pitch 3 one-line concepts and let the user pick,
+     unless they said to just go for it.
+   - **Don't copy.** No reference pet's animal + palette + pattern combination, and no pet that
+     repeats an existing one in `pets/` in silhouette and palette. If the user asks for an animal a
+     reference already has (a koi, a tiger), make a clearly different take (new theme, palette,
+     fin/horn layout) unless they explicitly ask for a replica.
+3. **Plan the build.** Target height and length (style.md §2), body rings, legs, head, and every
+   fin/wing/mane/spike group with its colour and tip colour. Check against the **Never** list.
+4. **Write the pet** as `pets/<Name>.lua` using the PET spec. Only data goes in the pet file. If a
+   design needs a new kind of shape, add a builder to PetKit (and document it in petkit-api.md)
+   rather than hand-placing dozens of parts.
+5. **Preview and critique.** Run `python3 scripts/preview.py pets/<Name>.lua` (needs
+   `pip install lupa pillow numpy`). It runs the real Luau with a Roblox stand-in and renders 4 views
+   next to a 5-stud player block. Critique it honestly: does it read as the animal at a glance? Is the
+   signature feature big and clear? Does it look like it belongs with the reference pets (studs,
+   facets, spikes, colour balance)? Are proportions believable? Fix and re-render; two or three rounds
+   is normal. Preview the variants you promise too (`--variant Golden`, `--variant Cyan,Secret`, ...).
+6. **Assemble the Studio script:**
    `python3 scripts/assemble.py pets/<Name>.lua -o <repo>/roblox-pets/<Name>.lua`
    (add `--variant ...` for a specific variant). This inlines PetKit, so the user pastes one file.
-6. **Deliver.** Send the assembled script plus the preview PNG. Tell the user how to run it:
-   View → Command Bar in Studio, paste, Enter. The pet appears at the origin, grouped as one Model.
-   To use it in game, move it into ServerStorage/ReplicatedStorage as the pet template.
+7. **Deliver.** Send the assembled script plus the preview PNG, with the concept in two or three
+   lines. Tell the user how to run it: View → Command Bar in Studio, paste, Enter. The pet appears at
+   the origin as one Model; for the game, move it into ServerStorage/ReplicatedStorage as a template.
 
 ## Studs: one-time setup
 
@@ -46,15 +61,16 @@ built after that creates `MaterialService.PetStuds`. Regenerate the maps with
 `scripts/make_stud_maps.py` (e.g. `--stud 0.34` for smaller studs) if the user wants them different.
 
 ## Self-check before delivering
-- Preview matches the references in silhouette and colour balance (base colour ≈ 55–75 %).
-- Height and hover height are in the style.md §2 range for the rarity; part count ≤ 450
-  (PetKit warns above that).
-- Every colour is a palette role; accent/glow parts use the `Accent`/`Glow` roles so mutations work.
-- Eyes use the Eye builder; fins, wings and manes use Fan with broad overlapping blades.
+- It's an original design: not a reference pet with the serial numbers filed off.
+- Style DNA is all there (style.md §1): studs, facets, realistic anatomy, spiky blade accents,
+  glossy eyes, colour structure with base ≈ 55–75 %.
+- The signature feature is obvious in the 3/4 preview at thumbnail size.
+- Height and hover height are in the style.md §2 range for the rarity; part count ≤ 450.
+- Every colour is a palette role; mutation-coloured parts use `Accent`/`Glow` so mutations work.
 - Nothing from the **Never** list.
 
-## Learning the style
-When the user says a pet looks wrong, or shares new references, first fix the pet, then write the
-lesson into `references/style.md` as a concrete rule with numbers or colours (for example "lamb legs are
-40 % of body height" rather than "legs too short"), and save any new reference image into
-`references/examples/`. Add approved pets to `pets/` so they become examples for the next one.
+## Learning
+When the user reacts to a pet, fix it, then record the lesson in `references/style.md`: style
+feedback ("fins too thin") becomes a concrete DNA rule with numbers; taste feedback ("love the
+crystal antlers", "too many colours") goes in the taste notes (§9). Save new reference images into
+`references/examples/`, and add approved pets to `pets/` so they become examples for the next one.

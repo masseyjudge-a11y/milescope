@@ -331,10 +331,13 @@ local function buildFan(ctx, s, mirrored)
 			x, y = -x, -y
 		end
 		local cf = CFrame.fromMatrix(center, x, y, z)
-		makePart(ctx, s.Name, "Wedge", Vector3.new(thick, width, len), cf, s.Color, s)
+		-- Alternate blade thickness slightly so overlapping blades never share a face (z-fighting).
+		local th = thick * (1 + 0.05 * ((j - 1) % 2))
+		makePart(ctx, s.Name, "Wedge", Vector3.new(th, width, len), cf, s.Color, s)
 		if s.Tip then
 			local tcf = cf * CFrame.new(0, -width / 2 + width * tipFrac / 2, -len / 2 + len * tipFrac / 2)
-			makePart(ctx, s.Name .. "Tip", "Wedge", Vector3.new(thick * 1.12, width * tipFrac, len * tipFrac), tcf, s.Tip, s)
+			local e = math.max(0.03, 0.02 * width) -- grow the tip a hair so it never shares a face with its blade
+			makePart(ctx, s.Name .. "Tip", "Wedge", Vector3.new(th * 1.12, width * tipFrac + 2 * e, len * tipFrac + 2 * e), tcf, s.Tip, s)
 		end
 	end
 end
