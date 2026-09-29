@@ -5078,7 +5078,12 @@ function wireOnboarding(){
 
   Array.prototype.forEach.call(root.querySelectorAll("[data-go]"), function(b){
     b.addEventListener("click", function(){
-      setMode(b.getAttribute("data-go"));
+      var go = b.getAttribute("data-go");
+      // signed in, or already set up on this device: their cards and airport
+      // are saved, so skip the setup and go straight to the map
+      var signedIn = typeof acct!=="undefined" && acct.user;
+      if(go==="setup" && (signedIn || (hasOnboarded() && !state.walletIsDemo))){ finish(false); return; }
+      setMode(go);
     });
   });
   Array.prototype.forEach.call(root.querySelectorAll("[data-skip]"), function(b){
