@@ -4253,7 +4253,18 @@ function acctSubmit(e){
           .catch(function(){ toast("Couldn’t delete the account just now. Try again, or email masseyjudge@gmail.com."); });
       });
       document.getElementById("acct-signout").addEventListener("click", function(){
-        acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); toast("Signed out. Your data stays on this device too."); });
+        acct.sb.auth.signOut().then(function(){
+          document.getElementById("dlg-account").close();
+          // signed out: this device forgets the wallet and trips (they're safe
+          // in the account) and goes back to entering cards and points
+          try{ ["pre_wallet_v2", TRIPS_KEY, "milescope_onboarded"].forEach(function(k){ localStorage.removeItem(k); }); }catch(e){}
+          state.wallet = Object.assign({}, DEMO_WALLET); state.walletIsDemo = true;
+          PROGRAMS.forEach(function(p){ state.enabled[p.id] = false; });
+          trips = [];
+          renderWallet(); renderTrips(); renderAll();
+          if(window.MSOpenSetup) MSOpenSetup();
+          toast("Signed out. Sign in again anytime to get your saved wallet back.");
+        });
       });
       window.MSAccount = { changed: function(){
         if(!acct.user || acct.applying) return;
@@ -5181,6 +5192,9 @@ function openOnboarding(){
   setMode("landing");
   window.setTimeout(sizeHeroGlobe, 80);   // the stage was display:none until now
 }
+
+// used by sign-out, which lives in the accounts code outside this closure
+window.MSOpenSetup = function(){ openOnboarding(); setMode("setup"); };
 
 /* The wordmark goes home, the way it does on every other site. This is the
    only discoverable way back to the landing once onboarding has been
