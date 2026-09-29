@@ -1478,6 +1478,13 @@
   .acct-msg{min-height:18px;margin:10px 0 0;font-size:13px;color:var(--text-2)}
   .acct-msg.err{color:#FCA5A5}
   .acct-msg.ok{color:var(--ok)}
+  .acct-oauth{margin-top:12px}
+  .acct-oauth[hidden]{display:none}
+  .acct-google{width:100%;justify-content:center;gap:10px;padding:10px 0;background:#fff;color:#1f1f1f;border-color:#fff;font-weight:600}
+  .acct-google:hover{background:#f1f3f4}
+  .acct-google svg{width:18px;height:18px}
+  .acct-or{display:flex;align-items:center;gap:10px;margin:14px 0 0;font-size:12px;color:var(--text-4)}
+  .acct-or::before,.acct-or::after{content:"";flex:1;height:1px;background:var(--line)}
   .acct-actions{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
   .acct-switch{margin:14px 0 0;font-size:13px;color:var(--text-3)}
   .acct-link{font:inherit;color:var(--accent-strong);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
@@ -1955,6 +1962,12 @@
   </div>
   <form class="dlg-body acct-form" id="acct-form" novalidate>
     <p class="hint" id="acct-intro">Save your cards, balances and trips, and pick up where you left off on any device. Optional: everything works without an account.</p>
+    <div class="acct-oauth" id="acct-oauth" hidden>
+      <button class="btn acct-google" id="acct-google" type="button">
+        <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+        Continue with Google</button>
+      <p class="acct-or"><span>or use email</span></p>
+    </div>
     <div class="field" id="acct-email-field">
       <label for="acct-email">Email</label>
       <input type="email" id="acct-email" autocomplete="email" required>
@@ -4100,6 +4113,7 @@ function acctMode(mode){
   document.getElementById("acct-submit").textContent = ({signin:"Sign in", signup:"Create account", forgot:"Send reset link", reset:"Save new password"})[mode];
   document.getElementById("acct-forgot").hidden = mode!=="signin";
   document.getElementById("acct-switch-wrap").hidden = mode==="reset";
+  document.getElementById("acct-oauth").hidden = !acct.google || mode==="reset" || mode==="forgot";
   document.getElementById("acct-switch-q").textContent = mode==="signin" ? "New here?" : "Have an account?";
   document.getElementById("acct-switch").textContent = mode==="signin" ? "Create an account" : "Sign in";
   document.getElementById("acct-pass").previousElementSibling.textContent = mode==="reset" ? "New password" : "Password";
@@ -4142,6 +4156,16 @@ function acctSubmit(e){
       var btn = document.getElementById("btn-account"); btn.hidden = false;
       btn.addEventListener("click", function(){ acctRender(); document.getElementById("dlg-account").showModal(); });
       document.getElementById("acct-form").addEventListener("submit", acctSubmit);
+      // "Continue with Google" shows only once Google is switched on in Supabase
+      fetch(cfg.supabaseUrl+"/auth/v1/settings", {headers:{apikey:cfg.supabaseAnonKey}}).then(function(r){ return r.json(); }).then(function(st){
+        acct.google = !!(st && st.external && st.external.google); acctMode(acct.mode);
+      }).catch(function(){});
+      document.getElementById("acct-google").addEventListener("click", function(){
+        acctMsg("Opening Google…");
+        acct.sb.auth.signInWithOAuth({provider:"google", options:{redirectTo: location.origin + location.pathname}}).then(function(r){
+          if(r.error) acctMsg("Google sign-in isn’t available right now. Use email instead.", "err");
+        });
+      });
       document.getElementById("acct-switch").addEventListener("click", function(){ acctMode(acct.mode==="signin" ? "signup" : "signin"); });
       document.getElementById("acct-forgot").addEventListener("click", function(){ acctMode("forgot"); });
       document.getElementById("acct-signout").addEventListener("click", function(){
