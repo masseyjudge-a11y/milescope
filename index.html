@@ -4442,7 +4442,10 @@ function asstToggle(open){
       asst.bots.push(BotAvatars.mount(document.getElementById("asst-bot"), {type:"clover", size:36}));
     }catch(e){ /* no avatar is fine; the panel still works */ }
   }
-  document.getElementById("asst-fab").addEventListener("click", function(){ asstToggle(!asst.open); });
+  document.getElementById("asst-fab").addEventListener("click", function(){
+    asst.bots.forEach(function(b){ if(b && b.poke) b.poke(); });   // Miles does his flip when tapped
+    asstToggle(!asst.open);
+  });
   document.getElementById("asst-x").addEventListener("click", function(){ asstToggle(false); document.getElementById("asst-fab").focus(); });
   document.addEventListener("keydown", function(e){ if(e.key==="Escape" && asst.open) asstToggle(false); });
   var mic = document.getElementById("asst-mic");
