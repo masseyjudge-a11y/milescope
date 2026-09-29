@@ -1486,8 +1486,13 @@
   .acct-google{width:100%;justify-content:center;gap:10px;padding:10px 0;background:#fff;color:#1f1f1f;border-color:#fff;font-weight:600}
   .acct-google:hover{background:#f1f3f4}
   .acct-google svg{width:18px;height:18px}
-  .acct-gis{display:flex;justify-content:center;min-height:44px}
+  /* Google's own button sits invisibly over ours: people see our white button,
+     but the click goes to Google, whose screen then names this site */
+  .acct-gbox{position:relative}
+  .acct-gis{position:absolute;inset:0;z-index:1;opacity:.01;overflow:hidden;display:flex;justify-content:center;align-items:center}
+  .acct-gis>div{transform:scale(1.6)}
   .acct-gis[hidden]{display:none}
+  .acct-gbox:has(.acct-gis:not([hidden]):hover) .acct-google{background:#f1f3f4}
   .acct-or{display:flex;align-items:center;gap:10px;margin:14px 0 0;font-size:12px;color:var(--text-4)}
   .acct-or::before,.acct-or::after{content:"";flex:1;height:1px;background:var(--line)}
   .acct-actions{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
@@ -1973,10 +1978,12 @@
   <form class="dlg-body acct-form" id="acct-form" novalidate>
     <p class="hint" id="acct-intro">Save your cards, balances and trips, and pick up where you left off on any device. Optional: everything works without an account.</p>
     <div class="acct-oauth" id="acct-oauth" hidden>
+      <div class="acct-gbox">
       <div class="acct-gis" id="acct-gis" hidden></div>
       <button class="btn acct-google" id="acct-google" type="button">
         <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
         Continue with Google</button>
+      </div>
       <p class="acct-or"><span>or use email</span></p>
     </div>
     <div class="field" id="acct-email-field">
@@ -4160,12 +4167,12 @@ function acctGoogleButton(clientId){
         }
       });
       host.innerHTML = "";
-      google.accounts.id.renderButton(host, {theme:"filled_black", size:"large", shape:"rectangular", text:"continue_with", width: Math.min(400, host.clientWidth || 320)});
+      google.accounts.id.renderButton(host, {theme:"filled_black", size:"large", shape:"rectangular", text:"continue_with", width: 400});
     });
   }
   var sc = document.createElement("script");
   sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
-  sc.onload = function(){ acct.gis = true; host.hidden = false; document.getElementById("acct-google").hidden = true; acctMode(acct.mode); init(); };
+  sc.onload = function(){ acct.gis = true; host.hidden = false; document.getElementById("acct-google").tabIndex = -1; acctMode(acct.mode); init(); };
   document.head.appendChild(sc);
   // Google sizes the button to its box, so render again once the dialog is open
   document.getElementById("btn-account").addEventListener("click", function(){ if(acct.gis) setTimeout(init, 60); });
