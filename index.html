@@ -630,6 +630,8 @@
   .ob-cta{display:flex;align-items:center;gap:calc(20 * var(--u));margin-top:calc(34 * var(--u));flex-wrap:wrap}
   .ob-cs-link{font-size:calc(14 * var(--u));text-decoration:none;opacity:.9}
   .ob-cs-link:hover{opacity:1}
+  .ob-legal{position:relative;z-index:2;margin:calc(14 * var(--u)) 0 0;font-size:calc(11.5 * var(--u));color:var(--text-3);text-align:center}
+  .ob-legal a{color:var(--text-2)}
   .ob-inline{font:inherit;color:var(--accent-2);cursor:pointer;text-decoration:underline;
     text-underline-offset:calc(3 * var(--u));text-decoration-color:rgba(125,211,252,.4)}
   .ob-inline:hover{color:#fff}
@@ -979,6 +981,7 @@
   .map-hint{top:112px;border-radius:999px}
   footer.foot{display:none}
   .list-foot{font-size:10px;line-height:1.5;color:var(--text-4);margin:10px 4px 4px;text-wrap:pretty}
+  .list-foot a{color:var(--text-3)}
   @media (max-width:1360px){ .stat-strip .stat{display:none} }
   @media (max-width:1180px) and (min-width:981px){ .map-legend{display:none} :root{--side-w:258px;--list-w:340px} }
   .map-topright{top:auto;bottom:16px;right:auto;left:50%;transform:translateX(-50%)}
@@ -1483,10 +1486,14 @@
   .acct-google{width:100%;justify-content:center;gap:10px;padding:10px 0;background:#fff;color:#1f1f1f;border-color:#fff;font-weight:600}
   .acct-google:hover{background:#f1f3f4}
   .acct-google svg{width:18px;height:18px}
+  .acct-gis{display:flex;justify-content:center;min-height:44px}
+  .acct-gis[hidden]{display:none}
   .acct-or{display:flex;align-items:center;gap:10px;margin:14px 0 0;font-size:12px;color:var(--text-4)}
   .acct-or::before,.acct-or::after{content:"";flex:1;height:1px;background:var(--line)}
   .acct-actions{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
   .acct-switch{margin:14px 0 0;font-size:13px;color:var(--text-3)}
+  .acct-danger{color:#FCA5A5 !important}
+  .acct-legal{margin:12px 0 0;font-size:12px}
   .acct-link{font:inherit;color:var(--accent-strong);background:none;border:0;padding:0;cursor:pointer;text-decoration:underline}
 
   /* ---- assistant ---- */
@@ -1634,6 +1641,7 @@
         </div>
       </div>
       <div class="ob-marquee" aria-hidden="true"><div class="ob-mq-track" id="ob-mq"></div></div>
+      <p class="ob-legal"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · Not affiliated with any airline or card issuer. Estimates only.</p>
     </section>
 
   </div>
@@ -1876,7 +1884,7 @@
     <div class="load-more" id="load-more-wrap" hidden>
       <button class="btn small" id="btn-load-more" type="button">Show more routes</button>
     </div>
-    <p class="list-foot">Prices are estimates. Check seats before you move points; transfers can't be undone.</p>
+    <p class="list-foot">Prices are estimates. Check seats before you move points; transfers can't be undone. Not affiliated with any airline or card issuer. <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></p>
   </aside>
 </div>
 
@@ -1952,6 +1960,8 @@
     <p>Every 6 hours, Milescope reads the big points blogs and uses TypeSafe's Jev model to spot new transfer bonuses. A bonus is only added if Jev is confident and the card really transfers to that airline. Anything unclear is skipped. Transfer partners are checked by hand.</p>
     <h3>About the prices</h3>
     <p>Prices are typical award prices, updated September 2026. A "~" means the airline changes prices often. Check real seats before you move points.</p>
+    <h3>The fine print</h3>
+    <p>Milescope is an independent planning tool, not financial advice, and isn’t affiliated with any airline, bank or card issuer. Read the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> and <a href="terms.html" target="_blank" rel="noopener">Terms of Use</a>.</p>
   </div>
   <div class="dlg-foot"><button class="btn primary" data-close="dlg-help" type="button">Got it</button></div>
 </dialog>
@@ -1963,6 +1973,7 @@
   <form class="dlg-body acct-form" id="acct-form" novalidate>
     <p class="hint" id="acct-intro">Save your cards, balances and trips, and pick up where you left off on any device. Optional: everything works without an account.</p>
     <div class="acct-oauth" id="acct-oauth" hidden>
+      <div class="acct-gis" id="acct-gis" hidden></div>
       <button class="btn acct-google" id="acct-google" type="button">
         <svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
         Continue with Google</button>
@@ -1981,12 +1992,15 @@
       <button class="btn primary" id="acct-submit" type="submit">Sign in</button>
       <button class="btn ghost small" id="acct-forgot" type="button">Forgot password?</button>
     </div>
+    <p class="hint acct-legal">By continuing you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
     <p class="acct-switch" id="acct-switch-wrap"><span id="acct-switch-q">New here?</span> <button type="button" class="acct-link" id="acct-switch">Create an account</button></p>
   </form>
   <div class="dlg-body acct-signed" id="acct-signed" hidden>
     <p>Signed in as <b id="acct-who"></b>.</p>
     <p class="hint" id="acct-sync">Your cards, balances, trips and home airport save to your account automatically.</p>
-    <div class="acct-actions"><button class="btn ghost small" id="acct-signout" type="button">Sign out</button></div>
+    <div class="acct-actions"><button class="btn ghost small" id="acct-signout" type="button">Sign out</button>
+      <button class="btn ghost small acct-danger" id="acct-delete" type="button">Delete my account</button></div>
+    <p class="hint acct-legal">See the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a> for what’s stored and how to get a copy.</p>
   </div>
 </dialog>
 
@@ -2033,7 +2047,7 @@
   </form>
   <p class="asst-note">AI answers can be wrong. Prices are estimates.</p>
 </section>
-<footer class="foot">Award prices are published-chart estimates ("~" = dynamically priced). Live seats come from seats.aero. Transfer partners and bonuses checked September 2026. Always confirm on the airline's site before transferring points; transfers can't be undone.</footer>
+<footer class="foot">Award prices are published-chart estimates ("~" = dynamically priced). Live seats come from seats.aero. Transfer partners and bonuses checked September 2026. Always confirm on the airline's site before transferring points; transfers can't be undone. · <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></footer>
 
 <!-- Globe libraries, pinned to exact versions and loaded as ordinary blocking
      scripts (not document.write, which Chrome may skip on slow connections;
@@ -4113,12 +4127,48 @@ function acctMode(mode){
   document.getElementById("acct-submit").textContent = ({signin:"Sign in", signup:"Create account", forgot:"Send reset link", reset:"Save new password"})[mode];
   document.getElementById("acct-forgot").hidden = mode!=="signin";
   document.getElementById("acct-switch-wrap").hidden = mode==="reset";
-  document.getElementById("acct-oauth").hidden = !acct.google || mode==="reset" || mode==="forgot";
+  document.getElementById("acct-oauth").hidden = !(acct.google || acct.gis) || mode==="reset" || mode==="forgot";
   document.getElementById("acct-switch-q").textContent = mode==="signin" ? "New here?" : "Have an account?";
   document.getElementById("acct-switch").textContent = mode==="signin" ? "Create an account" : "Sign in";
   document.getElementById("acct-pass").previousElementSibling.textContent = mode==="reset" ? "New password" : "Password";
   acctMsg("");
   acctRender();
+}
+/* With a Google client ID, sign in through Google's own button (Google
+   Identity Services) and hand the ID token to Supabase. Google's screen then
+   names this site rather than the Supabase project address. The nonce ties
+   the token to this attempt: Google gets its SHA-256, Supabase the original. */
+function acctGoogleButton(clientId){
+  var host = document.getElementById("acct-gis");
+  function sha256hex(t){
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)).then(function(b){
+      return Array.prototype.map.call(new Uint8Array(b), function(x){ return ("0"+x.toString(16)).slice(-2); }).join("");
+    });
+  }
+  function init(){
+    var raw = Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(16)), function(x){ return ("0"+x.toString(16)).slice(-2); }).join("");
+    sha256hex(raw).then(function(hashed){
+      google.accounts.id.initialize({
+        client_id: clientId, nonce: hashed, use_fedcm_for_prompt: true,
+        callback: function(resp){
+          acctMsg("Signing you in…");
+          acct.sb.auth.signInWithIdToken({provider:"google", token:resp.credential, nonce:raw}).then(function(r){
+            if(r.error) throw r.error;
+            acctMsg(""); document.getElementById("dlg-account").close();
+          }).catch(function(){ acctMsg("Google sign-in didn’t go through. Try again, or use email.", "err"); })
+            .then(init);                          // fresh nonce for the next attempt
+        }
+      });
+      host.innerHTML = "";
+      google.accounts.id.renderButton(host, {theme:"filled_black", size:"large", shape:"rectangular", text:"continue_with", width: Math.min(400, host.clientWidth || 320)});
+    });
+  }
+  var sc = document.createElement("script");
+  sc.src = "https://accounts.google.com/gsi/client"; sc.async = true;
+  sc.onload = function(){ acct.gis = true; host.hidden = false; document.getElementById("acct-google").hidden = true; acctMode(acct.mode); init(); };
+  document.head.appendChild(sc);
+  // Google sizes the button to its box, so render again once the dialog is open
+  document.getElementById("btn-account").addEventListener("click", function(){ if(acct.gis) setTimeout(init, 60); });
 }
 function acctMsg(text, kind){ var m = document.getElementById("acct-msg"); m.textContent = text; m.className = "acct-msg"+(kind?" "+kind:""); }
 function acctSubmit(e){
@@ -4156,6 +4206,7 @@ function acctSubmit(e){
       var btn = document.getElementById("btn-account"); btn.hidden = false;
       btn.addEventListener("click", function(){ acctRender(); document.getElementById("dlg-account").showModal(); });
       document.getElementById("acct-form").addEventListener("submit", acctSubmit);
+      if(cfg.googleClientId) acctGoogleButton(cfg.googleClientId);
       // "Continue with Google" shows only once Google is switched on in Supabase
       fetch(cfg.supabaseUrl+"/auth/v1/settings", {headers:{apikey:cfg.supabaseAnonKey}}).then(function(r){ return r.json(); }).then(function(st){
         acct.google = !!(st && st.external && st.external.google); acctMode(acct.mode);
@@ -4168,6 +4219,14 @@ function acctSubmit(e){
       });
       document.getElementById("acct-switch").addEventListener("click", function(){ acctMode(acct.mode==="signin" ? "signup" : "signin"); });
       document.getElementById("acct-forgot").addEventListener("click", function(){ acctMode("forgot"); });
+      document.getElementById("acct-delete").addEventListener("click", function(){
+        if(!confirm("Delete your Milescope account and everything saved to it? This can’t be undone. Your data on this device stays until you clear it.")) return;
+        acct.sb.rpc("delete_my_account").then(function(r){
+          if(r.error) throw r.error;
+          return acct.sb.auth.signOut();
+        }).then(function(){ document.getElementById("dlg-account").close(); toast("Your account and saved data were deleted."); })
+          .catch(function(){ toast("Couldn’t delete the account just now. Try again, or email masseyjudge@gmail.com."); });
+      });
       document.getElementById("acct-signout").addEventListener("click", function(){
         acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); toast("Signed out. Your data stays on this device too."); });
       });
