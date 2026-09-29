@@ -506,6 +506,7 @@
   .ob-peek-arm{position:absolute;left:50%;top:50%;width:0;height:0}
   .ob-peek img{position:absolute;left:calc(-38 * var(--u));top:calc(-76 * var(--u));
     width:calc(76 * var(--u));height:calc(76 * var(--u));transform:translateY(calc(76 * var(--u)));
+    opacity:0;   /* only shown while a peek is playing, never parked on the globe */
     filter:drop-shadow(0 0 calc(10 * var(--u)) rgba(125,211,252,.55))}
   .ob-planes{position:absolute;inset:0;pointer-events:none;transition:opacity .6s ease}
   .ob-plane{position:absolute;top:0;left:0;width:calc(17 * var(--u));height:calc(17 * var(--u));
@@ -4659,12 +4660,12 @@ function heroPeek(mount){
     var down = "translateY("+h+"px)", up = "translateY("+(h*.42)+"px)";
     var pop = "cubic-bezier(.34,1.5,.5,1)", ease = "ease-in-out";
     img.animate([
-      {transform:down+" rotate(0deg)", easing:pop},
-      {transform:up+" rotate(0deg)", offset:.2, easing:ease},
-      {transform:up+" rotate(-10deg)", offset:.38, easing:ease},
-      {transform:up+" rotate(10deg)", offset:.56, easing:ease},
-      {transform:up+" rotate(0deg)", offset:.74, easing:"cubic-bezier(.5,0,.75,0)"},
-      {transform:down+" rotate(0deg)"}
+      {transform:down+" rotate(0deg)", opacity:1, easing:pop},
+      {transform:up+" rotate(0deg)", opacity:1, offset:.2, easing:ease},
+      {transform:up+" rotate(-10deg)", opacity:1, offset:.38, easing:ease},
+      {transform:up+" rotate(10deg)", opacity:1, offset:.56, easing:ease},
+      {transform:up+" rotate(0deg)", opacity:1, offset:.74, easing:"cubic-bezier(.5,0,.75,0)"},
+      {transform:down+" rotate(0deg)", opacity:1}
     ], {duration:3600});
   }
   setTimeout(peek, 6500);                          // after the intro zoom settles
