@@ -1776,7 +1776,6 @@
   <button class="btn ghost small acct-btn" id="btn-account" type="button" hidden><span class="acct-dot" aria-hidden="true"></span><span id="btn-account-text">Sign in</span></button>
   <button class="icon-btn" id="btn-settings" type="button" aria-label="Settings"><svg class="ico"><use href="#i-sliders"/></svg></button>
   <button class="icon-btn" id="btn-help" type="button" aria-label="How this tool works"><svg class="ico"><use href="#i-help"/></svg></button>
-  <span class="disclaimer">Estimates for planning only. Confirm terms before transferring</span>
 </header>
 
 <div class="stat-strip">
@@ -1835,7 +1834,6 @@
   </aside>
 
   <main class="map-col" id="main-map">
-    <div class="map-hint" id="map-hint" aria-live="polite">Enter your points to see what you can afford</div>
     <div class="map-topright">
       <button class="chip" id="chip-affordable" type="button" aria-pressed="false">Show affordable</button>
       <button class="chip" id="chip-nonstop" type="button" aria-pressed="false">Nonstop only</button>
@@ -2811,9 +2809,6 @@ function renderAll(){
     : (affCount===0 ? "No routes clear yet at "+state.cabin+" pricing from "+state.home+"."
        : affCount===all.length ? "Every route from "+state.home+" is bookable with your balances."
        : Math.round(affCount/all.length*100)+"% of routes from "+state.home+" are bookable right now.");
-  document.getElementById("map-hint").textContent = !anyEnabled
-    ? "Enter your points to see what you can afford"
-    : affCount+" of "+all.length+" routes affordable from "+state.home;
   document.getElementById("stat-routes").textContent = all.length;
   renderLegend();
   renderGlobe(all);
