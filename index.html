@@ -4206,7 +4206,8 @@ function acctSubmit(e){
       var btn = document.getElementById("btn-account"); btn.hidden = false;
       btn.addEventListener("click", function(){ acctRender(); document.getElementById("dlg-account").showModal(); });
       document.getElementById("acct-form").addEventListener("submit", acctSubmit);
-      if(cfg.googleClientId) acctGoogleButton(cfg.googleClientId);
+      // Google's own button (acctGoogleButton) is off: it didn't sign people in, so
+      // the white button below uses Supabase's Google sign-in, which works
       // "Continue with Google" shows only once Google is switched on in Supabase
       fetch(cfg.supabaseUrl+"/auth/v1/settings", {headers:{apikey:cfg.supabaseAnonKey}}).then(function(r){ return r.json(); }).then(function(st){
         acct.google = !!(st && st.external && st.external.google); acctMode(acct.mode);
