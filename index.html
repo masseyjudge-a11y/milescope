@@ -500,6 +500,13 @@
                transform .95s var(--e-expo),filter .7s ease,opacity .7s ease}
   .ob-globe:active{cursor:grabbing}
   .ob-globe canvas{outline:none;display:block}
+  /* Miles now and then peeks over the planet's edge. The layer is masked to
+     everything outside the globe's disc, so he rises from behind the horizon */
+  .ob-peek{position:absolute;inset:0;pointer-events:none;z-index:3}
+  .ob-peek-arm{position:absolute;left:50%;top:50%;width:0;height:0}
+  .ob-peek img{position:absolute;left:calc(-38 * var(--u));top:calc(-76 * var(--u));
+    width:calc(76 * var(--u));height:calc(76 * var(--u));transform:translateY(calc(76 * var(--u)));
+    filter:drop-shadow(0 0 calc(10 * var(--u)) rgba(125,211,252,.55))}
   .ob-planes{position:absolute;inset:0;pointer-events:none;transition:opacity .6s ease}
   .ob-plane{position:absolute;top:0;left:0;width:calc(17 * var(--u));height:calc(17 * var(--u));
     margin:calc(-8.5 * var(--u)) 0 0 calc(-8.5 * var(--u));opacity:0;color:#EAF6FF;
@@ -4624,6 +4631,41 @@ function planeSvg(){
     '<path d="M12 2.2c.7 0 1.25.8 1.25 1.8v4.3l7.4 4.3c.22.13.35.37.35.63v1.3c0 .35-.33.6-.66.5l-7.09-2.06v3.9l2.2 1.6c.16.12.25.3.25.5v1.2c0 .3-.28.52-.57.45L12 20.4l-3.13.85a.47.47 0 0 1-.57-.45v-1.2c0-.2.09-.38.25-.5l2.2-1.6v-3.9l-7.09 2.06a.52.52 0 0 1-.66-.5v-1.3c0-.26.13-.5.35-.63l7.4-4.3V4c0-1 .55-1.8 1.25-1.8Z"/></svg>';
 }
 
+/* Miles peeks over the globe's rim every so often on the landing. The rim
+   radius comes from the camera, so he sits right on the horizon at any size. */
+function heroPeek(mount){
+  if(reduced || !Element.prototype.animate) return;
+  var layer = document.createElement("div"); layer.className = "ob-peek"; layer.setAttribute("aria-hidden","true");
+  layer.innerHTML = '<div class="ob-peek-arm"><img src="logo.png" alt=""></div>';
+  mount.appendChild(layer);
+  var arm = layer.firstChild, img = arm.firstChild;
+  function rimPx(){
+    var cam = HeroGlobe.camera(), R = HeroGlobe.getGlobeRadius ? HeroGlobe.getGlobeRadius() : 100;
+    var d = cam.position.length(), H = mount.clientHeight;
+    return (H/2) * Math.tan(Math.asin(Math.min(1, R/d))) / Math.tan(cam.fov * Math.PI / 360);
+  }
+  function peek(){
+    setTimeout(peek, 9000 + Math.random()*8000);
+    if(document.hidden || !/\bmode-landing\b/.test(root.className) || root.hidden) return;
+    var r = rimPx(), h = img.offsetHeight;
+    if(!r || !h) return;
+    var m = "radial-gradient(circle "+r+"px at 50% 50%, transparent "+(r-1)+"px, #000 "+r+"px)";
+    layer.style.webkitMaskImage = layer.style.maskImage = m;
+    var a = -20 + Math.random()*75;                        // along the top-right of the rim, clear of the headline
+    arm.style.transform = "rotate("+a+"deg) translateY("+(-r)+"px)";
+    var down = "translateY("+h+"px)", up = "translateY("+(h*.42)+"px)";
+    var pop = "cubic-bezier(.34,1.5,.5,1)", ease = "ease-in-out";
+    img.animate([
+      {transform:down+" rotate(0deg)", easing:pop},
+      {transform:up+" rotate(0deg)", offset:.2, easing:ease},
+      {transform:up+" rotate(-10deg)", offset:.38, easing:ease},
+      {transform:up+" rotate(10deg)", offset:.56, easing:ease},
+      {transform:up+" rotate(0deg)", offset:.74, easing:"cubic-bezier(.5,0,.75,0)"},
+      {transform:down+" rotate(0deg)"}
+    ], {duration:3600});
+  }
+  setTimeout(peek, 6500);                          // after the intro zoom settles
+}
 function initHeroGlobe(){
   var mount = document.getElementById("ob-globe-mount");
   var loading = document.getElementById("ob-globe-loading");
@@ -4666,6 +4708,7 @@ function initHeroGlobe(){
 
     sizeHeroGlobe();
     heroReady = true;
+    heroPeek(mount);
     window.__msHero = HeroGlobe;
     if(window.MSGlobeGlass) window.MSGlobeGlass(HeroGlobe, mount, "lg-hero");
     loading.hidden = true;
