@@ -4234,6 +4234,7 @@ function acctSubmit(e){
   }).then(function(){ btn.disabled = false; });
 }
 (function(){
+  try{ for(var i=0;i<localStorage.length;i++){ var k = localStorage.key(i); if(/^sb-.*-auth-token$/.test(k)) localStorage.setItem("ms_signed_in","1"); } }catch(e){}
   fetch("/api/config").then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; }).then(function(cfg){
     if(!cfg.supabaseUrl || !cfg.supabaseAnonKey) return;          // accounts not set up: stay local-only
     var sc = document.createElement("script");
@@ -4267,7 +4268,9 @@ function acctSubmit(e){
           .catch(function(){ toast("Couldn’t delete the account just now. Try again, or email masseyjudge@gmail.com."); });
       });
       document.getElementById("acct-signout").addEventListener("click", function(){
-        acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); });
+        try{ localStorage.setItem("ms_setup_next","1"); }catch(e){}
+        acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); })
+          .catch(function(){ try{ localStorage.removeItem("ms_setup_next"); }catch(e){} });
       });
       window.MSAccount = { changed: function(){
         if(!acct.user || acct.applying) return;
@@ -4281,7 +4284,7 @@ function acctSubmit(e){
         var hadAccount = false;
         try{ hadAccount = localStorage.getItem("ms_signed_in") === "1"; }catch(e){}
         if(acct.user){ try{ localStorage.setItem("ms_signed_in","1"); }catch(e){} }
-        else if(hadAccount) acctSignedOut();
+        else if(event==="SIGNED_OUT" || hadAccount) acctSignedOut();   // any explicit sign-out, or a session that ended while away
         if(acct.user && acct.user.id!==was) setTimeout(acctPull, 0);   // outside the auth callback, per Supabase's advice
       });
       acctMode("signin");
