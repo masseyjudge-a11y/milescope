@@ -4118,17 +4118,16 @@ function acctApply(d){
   renderWallet(); renderHomePill(); renderTrips(); renderAll();
 }
 /* Signed out: this device forgets the wallet and trips (they're safe in the
-   account) and goes back to entering cards and airport, now and on reload. */
+   account) and goes back to the start: landing, then cards and airport. */
 function acctSignedOut(){
   try{
-    ["pre_wallet_v2", TRIPS_KEY, "milescope_onboarded", "ms_signed_in"].forEach(function(k){ localStorage.removeItem(k); });
-    localStorage.setItem("ms_setup_next","1");
+    ["pre_wallet_v2", TRIPS_KEY, "milescope_onboarded", "ms_signed_in", "ms_setup_next"].forEach(function(k){ localStorage.removeItem(k); });
   }catch(e){}
   state.wallet = Object.assign({}, DEMO_WALLET); state.walletIsDemo = true;
   PROGRAMS.forEach(function(p){ state.enabled[p.id] = false; });
   trips = [];
   renderWallet(); renderTrips(); renderAll();
-  if(window.MSOpenSetup) MSOpenSetup();
+  if(window.MSOpenLanding) MSOpenLanding();
   toast("Signed out. Sign in again anytime to get your saved wallet back.");
 }
 function acctPull(){
@@ -4268,9 +4267,7 @@ function acctSubmit(e){
           .catch(function(){ toast("Couldn’t delete the account just now. Try again, or email masseyjudge@gmail.com."); });
       });
       document.getElementById("acct-signout").addEventListener("click", function(){
-        try{ localStorage.setItem("ms_setup_next","1"); }catch(e){}
-        acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); })
-          .catch(function(){ try{ localStorage.removeItem("ms_setup_next"); }catch(e){} });
+        acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); });
       });
       window.MSAccount = { changed: function(){
         if(!acct.user || acct.applying) return;
@@ -5124,7 +5121,7 @@ function finish(apply){
     state.home = homeIata;
     persist(); renderHomePill(); syncUrl();
   }
-  try{ localStorage.setItem("milescope_onboarded","1"); localStorage.removeItem("ms_setup_next"); }catch(e){}
+  try{ localStorage.setItem("milescope_onboarded","1"); }catch(e){}
   renderWallet(); renderAll();   // the map is fully built before the overlay lifts
   handOff();
 }
@@ -5203,8 +5200,8 @@ function openOnboarding(){
   window.setTimeout(sizeHeroGlobe, 80);   // the stage was display:none until now
 }
 
-// used by sign-out, which lives in the accounts code outside this closure
-window.MSOpenSetup = function(){ openOnboarding(); setMode("setup"); };
+// used by sign-out (accounts code, outside this closure) to go back to the start
+window.MSOpenLanding = function(){ openOnboarding(); };
 
 /* The wordmark goes home, the way it does on every other site. This is the
    only discoverable way back to the landing once onboarding has been
@@ -5234,10 +5231,6 @@ function initOnboarding(){
 
   wireOnboarding();
   root.hidden = false;
-  // just signed out: skip the pitch and go straight to cards and airport
-  var afterSignOut = false;
-  try{ afterSignOut = localStorage.getItem("ms_setup_next") === "1"; }catch(e){}
-  if(afterSignOut){ document.documentElement.classList.remove("anim"); setMode("setup"); return; }
 
   var html = document.documentElement;
   if(!html.classList.contains("anim")) return;
