@@ -4667,7 +4667,7 @@ function planeSvg(){
 /* Miles peeks over the globe's rim every so often on the landing. The rim
    radius comes from the camera, so he sits right on the horizon at any size. */
 function heroPeek(mount){
-  if(reduced || !Element.prototype.animate) return;
+  if(!Element.prototype.animate) return;
   var layer = document.createElement("div"); layer.className = "ob-peek"; layer.setAttribute("aria-hidden","true");
   layer.innerHTML = '<div class="ob-peek-arm"><img src="logo.png" alt=""></div>';
   mount.appendChild(layer);
@@ -4678,7 +4678,7 @@ function heroPeek(mount){
     return (H/2) * Math.tan(Math.asin(Math.min(1, R/d))) / Math.tan(cam.fov * Math.PI / 360);
   }
   function peek(){
-    setTimeout(peek, 9000 + Math.random()*8000);
+    setTimeout(peek, 7000 + Math.random()*6000);
     if(document.hidden || !/\bmode-landing\b/.test(root.className) || root.hidden) return;
     var r = rimPx(), h = img.offsetHeight;
     if(!r || !h) return;
@@ -4688,16 +4688,23 @@ function heroPeek(mount){
     arm.style.transform = "rotate("+a+"deg) translateY("+(-r)+"px)";
     var down = "translateY("+h+"px)", up = "translateY("+(h*.42)+"px)";
     var pop = "cubic-bezier(.34,1.5,.5,1)", ease = "ease-in-out";
-    img.animate([
+    // Reduce Motion: same peek, but a slow rise and fall with no wiggle
+    var frames = reduced ? [
+      {transform:down+" rotate(0deg)", opacity:1, easing:ease},
+      {transform:up+" rotate(0deg)", opacity:1, offset:.3},
+      {transform:up+" rotate(0deg)", opacity:1, offset:.7, easing:ease},
+      {transform:down+" rotate(0deg)", opacity:1}
+    ] : [
       {transform:down+" rotate(0deg)", opacity:1, easing:pop},
       {transform:up+" rotate(0deg)", opacity:1, offset:.2, easing:ease},
       {transform:up+" rotate(-10deg)", opacity:1, offset:.38, easing:ease},
       {transform:up+" rotate(10deg)", opacity:1, offset:.56, easing:ease},
       {transform:up+" rotate(0deg)", opacity:1, offset:.74, easing:"cubic-bezier(.5,0,.75,0)"},
       {transform:down+" rotate(0deg)", opacity:1}
-    ], {duration:3600});
+    ];
+    img.animate(frames, {duration: reduced ? 4200 : 3600});
   }
-  setTimeout(peek, 6500);                          // after the intro zoom settles
+  setTimeout(peek, 4500);                          // soon after the intro zoom settles
 }
 function initHeroGlobe(){
   var mount = document.getElementById("ob-globe-mount");
