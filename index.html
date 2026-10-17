@@ -4124,7 +4124,7 @@ function acctApply(d){
    account) and goes back to the start: landing, then cards and airport. */
 function acctSignedOut(){
   try{
-    ["pre_wallet_v2", TRIPS_KEY, "milescope_onboarded", "ms_signed_in", "ms_setup_next"].forEach(function(k){ localStorage.removeItem(k); });
+    ["pre_wallet_v2", TRIPS_KEY, "milescope_onboarded"].forEach(function(k){ localStorage.removeItem(k); });
   }catch(e){}
   state.wallet = Object.assign({}, DEMO_WALLET); state.walletIsDemo = true;
   PROGRAMS.forEach(function(p){ state.enabled[p.id] = false; });
@@ -4236,7 +4236,6 @@ function acctSubmit(e){
   }).then(function(){ btn.disabled = false; });
 }
 (function(){
-  try{ for(var i=0;i<localStorage.length;i++){ var k = localStorage.key(i); if(/^sb-.*-auth-token$/.test(k)) localStorage.setItem("ms_signed_in","1"); } }catch(e){}
   fetch("/api/config").then(function(r){ return r.ok ? r.json() : {}; }).catch(function(){ return {}; }).then(function(cfg){
     if(!cfg.supabaseUrl || !cfg.supabaseAnonKey) return;          // accounts not set up: stay local-only
     var sc = document.createElement("script");
@@ -4270,7 +4269,9 @@ function acctSubmit(e){
           .catch(function(){ toast("Couldn’t delete the account just now. Try again, or email masseyjudge@gmail.com."); });
       });
       document.getElementById("acct-signout").addEventListener("click", function(){
-        acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); });
+        acct.signingOut = true;
+        acct.sb.auth.signOut().then(function(){ document.getElementById("dlg-account").close(); })
+          .catch(function(){ acct.signingOut = false; });
       });
       window.MSAccount = { changed: function(){
         if(!acct.user || acct.applying) return;
@@ -4281,10 +4282,9 @@ function acctSubmit(e){
         acct.user = session ? session.user : null;
         if(event==="PASSWORD_RECOVERY"){ acctMode("reset"); document.getElementById("dlg-account").showModal(); return; }
         acctRender();
-        var hadAccount = false;
-        try{ hadAccount = localStorage.getItem("ms_signed_in") === "1"; }catch(e){}
-        if(acct.user){ try{ localStorage.setItem("ms_signed_in","1"); }catch(e){} }
-        else if(event==="SIGNED_OUT" || hadAccount) acctSignedOut();   // any explicit sign-out, or a session that ended while away
+        // only the Sign out button resets the device; an expired session or a
+        // sign-out in another tab leaves the wallet here untouched
+        if(!acct.user && event==="SIGNED_OUT" && acct.signingOut){ acct.signingOut = false; acctSignedOut(); }
         if(acct.user && acct.user.id!==was) setTimeout(acctPull, 0);   // outside the auth callback, per Supabase's advice
       });
       acctMode("signin");
@@ -4862,6 +4862,7 @@ function trackTilt(host, tiltEl, maxDeg){
     if(raf) return;
     raf = requestAnimationFrame(function(){
       raf = null;
+      if(!rect) return;   // the pointer already left; pointerleave reset the card
       var x = (e.clientX-rect.left)/rect.width, y = (e.clientY-rect.top)/rect.height;
       if(tiltEl){
         tiltEl.style.setProperty("--ry", ((x-.5)*maxDeg*2).toFixed(2)+"deg");
@@ -5164,8 +5165,9 @@ function wireOnboarding(){
       var go = b.getAttribute("data-go");
       // signed in, or already set up on this device: their cards and airport
       // are saved, so skip the setup and go straight to the map
+      // (a brand-new account has no cards yet, so it still goes through setup)
       var signedIn = typeof acct!=="undefined" && acct.user;
-      if(go==="setup" && (signedIn || (hasOnboarded() && !state.walletIsDemo))){ finish(false); return; }
+      if(go==="setup" && !state.walletIsDemo && (signedIn || hasOnboarded())){ finish(false); return; }
       setMode(go);
     });
   });
